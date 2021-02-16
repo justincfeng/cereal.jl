@@ -48,7 +48,7 @@ For a more complete test, run the test function ```cerealtest.full(n,q)```, whic
 cerealtest.full(100,1e-8)
 ```
 
-The current code seems to generate a significant number of errors below this threshold for 1e6 test cases---I suspect that this is due to the appearance of square roots in the calculation. The default precision is Float64 (double precision), but one may increase the precision by using [DoubleFloats.jl](https://github.com/JuliaMath/DoubleFloats.jl) instead:
+The current code seems to generate a significant number of errors below this threshold for 1e6 test cases; while this threshold is high, this may be due instances where square roots of small differences are computed, which can amplify floating point errors---these boundary cases will be handled in future updates. The default precision is Float64 (double precision), but one may increase the precision by using [DoubleFloats.jl](https://github.com/JuliaMath/DoubleFloats.jl) instead:
 ```julia
 using DoubleFloats
 n = Int64(1e6)
