@@ -1,5 +1,5 @@
 # cereal.jl
-This is a simple, Special Relativistic Location (SRL/cereal) code for use in relativistic positioning systems. It computes the intersection of future pointing light cones from four distinct spacelike separated emission points.
+This is a simple, Special Relativistic Location (SRL/cereal) tool for use in relativistic positioning systems. It computes the intersection of future pointing light cones from four distinct spacelike separated emission points.
 
 The algorithm is conceptually simple:
 
