@@ -9,10 +9,14 @@ The algorithm is conceptually simple:
 
   3. Transform back to obtain the coordinates of the intersection point in the original frame.
 
-To try out the code, open the Julia REPL in the directory containing cereal.jl, and run:
+To try out the code, open the Julia REPL in the directory containing ```cereal.jl```, and run:
 
 ```julia
 include("cereal.jl")
+```
+Alternatively, one can open the Julia REPL and run the following, where ```[directory]``` is the directory containing cereal.jl:
+```julia
+include("[directory]/cereal.jl")
 ```
 The following generates an 4x4 array array ```X```, the column vectors of which are the coordinates for each emission point:
 ```julia
@@ -37,7 +41,7 @@ P = cereal.locator(X)
 ```
 To check the result, run the function:
 ```julia
-cerealtest.single(1e-8,X)
+cerealtest.single(1e-8,P,X)
 ```
 The test function ```cerealtest.single(q,X)``` returns ```true``` if the constraints are satisfied up a threshold value ```q```, and returns the array ```X``` if they are not.
 

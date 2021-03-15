@@ -150,7 +150,7 @@ end  # End scope of module cereal
 module cerealtest    # Test module for cereal
 
 using LinearAlgebra      # The only external library needed here
-import Main.cereal       # Importing functions from cereal
+import ..cereal       # Importing functions from cereal
 
 const RealVec{T<:Real} = Array{T,1}      # Defining vector datatype
 const RealMtx{T<:Real} = Array{T,2}      # Defining matrix datatype
@@ -230,10 +230,10 @@ function epgen( tpfl::DataType )     # Randomly generates a set of four emission
     return LT(W,NV)
 end  # End epgen
 
-function single( q::Real , X::RealMtx )     # Checks if separation vectors are null
+function single( q::Real , P::RealVec, X::RealMtx )     # Checks if separation vectors are null
     tpfl=typeof(q)
 
-    Y = cereal.locator( X )
+    Y = P
 
     dX1 = Y - X[:,1]
     dX2 = Y - X[:,2]
@@ -265,7 +265,7 @@ function full( iters::Number, q::Real )     # Main test function--q determines f
     mi = zero(Int64)
     for i=1:Int64(iters)
         a = epgen(tpfl)
-        b = single(q,a)
+        b = single(q,cereal.locator(a),a)
         if b != true
             print(b,"\n \n")
             lb = true
