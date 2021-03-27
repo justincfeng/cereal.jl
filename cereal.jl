@@ -83,10 +83,15 @@ end  # End NormVecF
 
 function LTM( NV::RealVec )        # Constructs Lorentz transformation matrix
     tpfl=typeof(NV[1])
-        γ = NV[1]       # γ is the Lorentz factor
-        δ = (γ - one(tpfl))    # A useful quantity
-        β = sqrt( one(tpfl) - one(tpfl)/(γ*γ))     # β is v/c
-        nf = 1/sqrt(NV[2]^2 + NV[3]^2 + NV[4]^2)  # Normalization factor
+        γ = NV[1]               # γ is the Lorentz factor
+        δ = (γ - one(tpfl))     # A useful quantity
+        β = sqrt( one(tpfl) - one(tpfl)/(γ*γ))      # β is v/c
+        NVs = NV[2]^2 + NV[3]^2 + NV[4]^2           # Square of spatial part
+        if NVs > 0              # Normalization factor check
+            nf = 1/sqrt(NVs)    # Normalization factor
+        else
+            nf = zero(tpfl)     # Set normalization factor to zero
+        end
         vx = nf*NV[2]     # x-component of unit vector
         vy = nf*NV[3]     # y-component of unit vector
         vz = nf*NV[4]     # z-component of unit vector
