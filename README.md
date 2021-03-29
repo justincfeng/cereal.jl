@@ -51,29 +51,29 @@ P = cereal.locator(X)
 To check the result, run the function:
 
 ```julia
-cerealtest.single(1e-8,P,X)
+cerealtest.single(1e-13,P,X)
 ```
 
 The test function ```cerealtest.single(q,P,X)``` returns ```true``` if the constraints are satisfied up a threshold value ```q```, and returns the array ```X``` if they are not.
 
 Specifically, the test function computes the separation vectors ```V[i]=X[:,i]-P``` for each of the emission points ```X[:,i]``` and the intersection point ```P```, and compares the average of the Minkowski norm (which should be zero) to the Euclidean norm for the separation vectors ```V[i]```. The test function returns ```true``` if the Minkowski norm is smaller than the Euclidean norm by a factor of less than ```q```.
 
-For a more complete test, run the test function ```cerealtest.full(n,q)```, which performs the test described above for ```n``` randomly generated test cases. The following is an example which generates 100 test cases with a threshold of ```1e-8```:
+For a more complete test, run the test function ```cerealtest.full(n,q)```, which performs the test described above for ```n``` randomly generated test cases. The following is an example which generates a million test cases with a threshold of ```1e-13```:
 
 ```julia
-cerealtest.full(100,1e-8)
+cerealtest.full(1e6,1e-13)
 ```
 
-The current code seems to generate a significant number of errors below this threshold for 1e6 test cases; while this threshold is high, this may be due instances where square roots of small differences are computed, which can amplify floating point errors---these boundary cases will be handled in future updates. The default precision is Float64 (double precision), but one may increase the precision by using [DoubleFloats.jl](https://github.com/JuliaMath/DoubleFloats.jl) instead:
+The default precision is Float64 (double precision), but one may increase the precision by using [DoubleFloats.jl](https://github.com/JuliaMath/DoubleFloats.jl) instead:
 
 ```julia
 using DoubleFloats
 n = Int64(1e6)
-q = Double64(1e-19)
+q = Double64(1e-26)
 cerealtest.full(n,q)
 ```
 
-With the increased precision, the cereal code passes this test with a much lower threshold of ```1e-19```.
+With the increased precision, the cereal code passes this test with a much lower threshold of ```1e-26```.
 
 To my knowledge, the particular algorithm implemented in this code does not yet appear in the literature*; this algorithm is presented for its conceptual simplicity. It should be mentioned that other algorithms which solve the same problem appear in the literature, for instance the one described in Coll et al., Class.Quant.Grav. 27 (2010) 065013, which has been implemented in Puchades et al., Astrophys.Space Sci. 341 (2012) 631-643, and also the algorithm described in Kostić et al., Class. Quantum Grav. 32 (2015) 215004 and Čadež et al., Advanced Concepts Team, ARIADNA final report (09/1301), European Space Agency, 2010. The implementation of these alternative algorithms in Julia and benchmark comparisons will be performed in the near future.
 
