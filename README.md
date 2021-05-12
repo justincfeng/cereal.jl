@@ -9,17 +9,12 @@ The algorithm is conceptually simple:
 
   3. Transform back to obtain the coordinates of the intersection point in the original frame.
 
-To try out the code, open the Julia REPL in the directory containing ```cereal.jl```, and run:
+To try out the code, open the Julia REPL in the directory containing ```cereal.jl``` , and run:
 
 ```julia
 include("cereal.jl")
 ```
-
-Alternatively, one can open the Julia REPL and run the following, where ```[directory]``` is the directory containing cereal.jl:
-
-```julia
-include("[directory]/cereal.jl")
-```
+In the REPL, you can change directory using the command ```cd("[directory]")```, with ```[directory]``` being the directory containing ```cereal.jl```.
 
 The following generates an 4x4 array array ```X```, the column vectors of which are the coordinates for each emission point:
 

@@ -137,7 +137,7 @@ function locator( X::RealMtx )    # Special relativistic locator code
         Λ = LTM(NV)             # Lorentz transformation matrix
         Y = zeros(tpfl,4,4)      # Create container
         for i=1:4
-            Y[:,i] =  Λ * X[:,i]    # Lorentz transformation
+            Y[:,i] = Λ * X[:,i]    # Lorentz transformation
         end
 
         XP = IPfinder(Y)        # Intersection point in adapted frame
@@ -239,7 +239,7 @@ end  # End epgen
 function single( q::Real , P::RealVec, X::RealMtx )     # Checks if separation vectors are null
     tpfl=typeof(q)
 
-    Y = P
+    Y = copy(P)
 
     dX1 = Y - X[:,1]
     dX2 = Y - X[:,2]
