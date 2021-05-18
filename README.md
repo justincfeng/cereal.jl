@@ -51,7 +51,7 @@ cerealtest.single(1e-13,P,X)
 
 The test function ```cerealtest.single(q,P,X)``` returns ```true``` if the constraints are satisfied up a threshold value ```q```, and returns the array ```X``` if they are not.
 
-Specifically, the test function computes the separation vectors ```V[i]=X[:,i]-P``` for each of the emission points ```X[:,i]``` and the intersection point ```P```, and compares the average of the Minkowski norm (which should be zero) to the Euclidean norm for the separation vectors ```V[i]```. The test function returns ```true``` if the Minkowski norm is smaller than the Euclidean norm by a factor of less than ```q```.
+Specifically, the test function computes the separation vectors ```V[i]=X[:,i]-P``` for each of the emission points ```X[:,i]``` and the intersection point ```P```, and compares the average of the ratio of the squared Minkowski norm (which should be zero) to the squared Euclidean norm for the separation vectors ```V[i]```. The test function returns ```true``` if the absolute value of the averaged ratio is less than ```q```.
 
 For a more complete test, run the test function ```cerealtest.full(n,q)```, which performs the test described above for ```n``` randomly generated test cases. The following is an example which generates a million test cases with a threshold of ```1e-13```:
 

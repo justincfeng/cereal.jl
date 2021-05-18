@@ -50,7 +50,7 @@ function Frame( X::RealMtx )        # Constructs spatial frame
     end
 end  # End Frame
 
-function NormVecF( E::RealMtx )        # Constructs timelike normal to frame
+function NormVecF( E::RealMtx )     # Constructs timelike normal to frame
     tpfl=typeof(E[1,1])
         NVr = [ E[2,3]*E[3,2]*E[4,1] - E[2,2]*E[3,3]*E[4,1] -
                 E[2,3]*E[3,1]*E[4,2] + E[2,1]*E[3,3]*E[4,2] +
@@ -81,7 +81,7 @@ function NormVecF( E::RealMtx )        # Constructs timelike normal to frame
         end
 end  # End NormVecF
 
-function LTM( NV::RealVec )        # Constructs Lorentz transformation matrix
+function LTM( NV::RealVec )     # Constructs Lorentz transformation matrix
     tpfl=typeof(NV[1])
         γ = NV[1]               # γ is the Lorentz factor
         δ = (γ - one(tpfl))     # A useful quantity
@@ -105,48 +105,48 @@ end  # End LTM
 function IPfinder( Y::RealMtx )    # Finds intersection of light cones in adapted frame
   tpfl=typeof(Y[1,1])
 
-      X = zeros(tpfl,3,4)
-      V = zeros(tpfl,3,3)
+    X = zeros(tpfl,3,4)     # Create containers
+    V = zeros(tpfl,3,3)
 
-      X[1,:] = Y[2,:]    # Spatial points for corners of tetrahedron
-      X[2,:] = Y[3,:]
-      X[3,:] = Y[4,:]
+    X[1,:] = Y[2,:]    # Spatial points for corners of tetrahedron
+    X[2,:] = Y[3,:]
+    X[3,:] = Y[4,:]
 
-      V[:,1] = X[:,2] - X[:,1]    # "Frame" vectors centered on point X[:,1]
-      V[:,2] = X[:,3] - X[:,1]
-      V[:,3] = X[:,4] - X[:,1]
+    V[:,1] = X[:,2] - X[:,1]    # "Frame" vectors centered on point X[:,1]
+    V[:,2] = X[:,3] - X[:,1]
+    V[:,3] = X[:,4] - X[:,1]
 
-      B = [ X[:,2]⋅X[:,2] - X[:,1]⋅X[:,1] ; X[:,3]⋅X[:,3] - X[:,1]⋅X[:,1] ;
-            X[:,4]⋅X[:,4] - X[:,1]⋅X[:,1] ] / 2    # Constructing B vector
+    B = [ X[:,2]⋅X[:,2] - X[:,1]⋅X[:,1] ; X[:,3]⋅X[:,3] - X[:,1]⋅X[:,1] ;
+          X[:,4]⋅X[:,4] - X[:,1]⋅X[:,1] ] / 2    # Constructing B vector
 
-      A = transpose([ V[:,1]  V[:,2]  V[:,3] ])    # Constructing A matrix
+    A = transpose([ V[:,1]  V[:,2]  V[:,3] ])    # Constructing A matrix
 
-      xc = inv(A)*B    # Compute circumcenter
-
-      rc = sqrt( (xc-X[:,1])⋅(xc-X[:,1]) )    # Compute distance to circumcenter
-
-      tc = rc + Y[1,1]    # Compute time coordinate
-
-  return [ tc ; xc[1] ; xc[2] ; xc[3] ]
+    xc = inv(A)*B       # Compute circumcenter
+    rc = sqrt( (xc-X[:,1])⋅(xc-X[:,1]) )    # Compute distance to circumcenter
+    tc = rc + Y[1,1]    # Compute time coordinate
+    return [ tc ; xc[1] ; xc[2] ; xc[3] ]
 end  # End IPfinder
 
 function locator( X::RealMtx )    # Special relativistic locator code
-  tpfl=typeof(X[1,1])
-        E = Frame(X)            # Constructing spatial frame
-        NV = NormVecF(E)        # Constructing normal vector to frame
-        Λ = LTM(NV)             # Lorentz transformation matrix
-        Y = zeros(tpfl,4,4)      # Create container
-        for i=1:4
-            Y[:,i] = Λ * X[:,i]    # Lorentz transformation
-        end
+    tpfl=typeof(X[1,1])
 
-        XP = IPfinder(Y)        # Intersection point in adapted frame
+    Y = zeros(tpfl,4,4)     # Create containers
+    Z = zeros(tpfl,4)
 
-        ΛR = inv(Λ)           # Lorentz transformation matrix
-        Z = zeros(tpfl,4)    # Create container
-        for i=1:4
-           Z = ΛR * XP       # Lorentz transformation
-        end
+    E = Frame(X)            # Constructing spatial frame
+    NV = NormVecF(E)        # Constructing normal vector to frame
+    Λ = LTM(NV)             # Lorentz transformation matrix
+
+    for i=1:4
+        Y[:,i] = Λ * X[:,i]    # Lorentz transformation
+    end
+
+    XP = IPfinder(Y)        # Intersection point in adapted frame
+    ΛR = inv(Λ)             # Lorentz transformation matrix
+
+    for i=1:4
+        Z = ΛR * XP       # Lorentz transformation
+    end
     return Z
 end  # End locator
 
@@ -155,8 +155,8 @@ end  # End scope of module cereal
 
 module cerealtest    # Test module for cereal
 
-using LinearAlgebra      # The only external library needed here
-import ..cereal       # Importing functions from cereal
+using LinearAlgebra     # The only external library needed here
+import ..cereal         # Importing functions from cereal
 
 const RealVec{T<:Real} = Array{T,1}      # Defining vector datatype
 const RealMtx{T<:Real} = Array{T,2}      # Defining matrix datatype
@@ -172,18 +172,11 @@ end  # End vgenerator
 
 function nvgenerator( tpfl::DataType )   # Generates random 4-velocity
     v = vgenerator(tpfl)
-
     v = rand(tpfl)*rand(tpfl)*v
-
-    V = [   one(tpfl)  ;
-              v[1]     ;
-              v[2]     ;
-              v[3]     ]
-
+    V = [ one(tpfl) ; v[1] ; v[2] ; v[3] ]
     fl = one(tpfl) / sqrt(abs(cereal.η(V,V)))
 
     NV = fl*V
-
     return NV
 end  # End nvgenerator
 
@@ -199,34 +192,30 @@ function pointgenerator( tpfl::DataType )     # Generates four random points W a
             V1[1]  V2[1]  V3[1]  V4[1]  ;
             V1[2]  V2[2]  V3[2]  V4[2]  ;
             V1[3]  V2[3]  V3[3]  V4[3]  ]
-
     return W
 end  # End pointgenerator
 
 function LT( W::RealMtx, NV::RealVec )     # Lorentz transforms points W to frame where vector NV is in t direction
     tpfl=typeof(W[1,1])
+    Z = zeros(tpfl,4,4)
 
     Λ = cereal.LTM(NV)
-
     β = rand(tpfl)/(2*one(tpfl))
     γ = one(tpfl)/sqrt( one(tpfl) - β^2 )
-    δ = ( γ - one(tpfl) )             # A useful quantity
+    δ = ( γ - one(tpfl) )
 
-    vx = β*NV[1]        # x-component of unit vector
-    vy = β*NV[2]        # y-component of unit vector
-    vz = β*NV[3]        # z-component of unit vector
+    vx = β*NV[1]        # components of unit vector
+    vy = β*NV[2]
+    vz = β*NV[3]
 
     Λ = [  γ        -γ*β*vx        -γ*β*vy        -γ*β*vz       ;
            -γ*β*vx   one(tpfl) + δ*(vx^2)  δ*vx*vy        δ*vx*vz      ;
            -γ*β*vy   δ*vy*vx        one(tpfl) + δ*(vy^2)  δ*vy*vz      ;
            -γ*β*vz   δ*vz*vx        δ*vz*vy        one(tpfl) + δ*(vz^2) ]
 
-    Z = zeros(tpfl,4,4)
-
     for i=1:4
         Z[:,i] = Λ * W[:,i] # Lorentz transformation
     end
-
     return Z
 end  # End LT
 
@@ -236,48 +225,41 @@ function epgen( tpfl::DataType )     # Randomly generates a set of four emission
     return LT(W,NV)
 end  # End epgen
 
+function nsqr( V1::RealVec )   # Squared norm ratio
+    return abs(cereal.η(V1,V1)/(V1⋅V1))
+end  # End nsqr
+
 function single( q::Real , P::RealVec, X::RealMtx )     # Checks if separation vectors are null
     tpfl=typeof(q)
-
     Y = copy(P)
 
-    dX1 = Y - X[:,1]
-    dX2 = Y - X[:,2]
-    dX3 = Y - X[:,3]
-    dX4 = Y - X[:,4]
-
-    n1 = cereal.η(dX1,dX1)/dot(dX1,dX1)
-    n2 = cereal.η(dX2,dX2)/dot(dX2,dX2)
-    n3 = cereal.η(dX3,dX3)/dot(dX3,dX3)
-    n4 = cereal.η(dX4,dX4)/dot(dX4,dX4)
-
-    VT = [  cereal.η(dX1,dX1)/dot(dX1,dX1)  ;
-            cereal.η(dX2,dX2)/dot(dX2,dX2)  ;
-            cereal.η(dX3,dX3)/dot(dX3,dX3)  ;
-            cereal.η(dX4,dX4)/dot(dX4,dX4)  ]
+    VT = [ nsqr( Y - X[:,1] ) ; nsqr( Y - X[:,2] ) ;
+           nsqr( Y - X[:,3] ) ; nsqr( Y - X[:,4] ) ]
 
     av = ( VT[1] + VT[2] + VT[3] + VT[4] ) / (4*one(tpfl))
 
     if av < q
         return true
     else
-        return X
+        return ( X , av )
     end
-end  # End ctesti
+end  # End single
 
 function full( iters::Number, q::Real )     # Main test function--q determines floating point datatype
     tpfl=typeof(q)
     lb=false
     mi = zero(Int64)
+
     for i=1:Int64(iters)
         a = epgen(tpfl)
         b = single(q,cereal.locator(a),a)
         if b != true
-            print(b,"\n \n")
+            print(b[2],"\n \n")
             lb = true
             mi += 1
         end
     end
+
     if lb
         print("Test ended with ",mi," failed cases \n")
     else
