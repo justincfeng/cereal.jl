@@ -3,11 +3,13 @@ This is a simple, Special Relativistic Location (SRL/cereal) tool for use in rel
 
 The algorithm is conceptually simple:
 
-  1. Find and perform a Lorentz transformation such that the four points have the same time coordinate in the transformed frame. In the transformed frame, the four points form a tetrahedron in space at some instant in time.
+  1. Find and perform a Lorentz transformation such that the four points *X<sub>i</sub>* (labeled with *i* ∈ {1,2,3,4}) have the same time coordinate in the transformed frame. In the transformed frame, the four points form a tetrahedron in space at some instant in time.
 
   2. Assuming the tetrahedron has finite volume, find the circumcenter and circumradius. The circumcenter provides the spatial coordinates of the intersection point in the new frame, and the circumradius provides the time coordinate (via time of flight).
 
   3. Transform back to obtain the coordinates of the intersection point in the original frame.
+
+The computed point *P* should satisfy the four constraints *dX<sub>i</sub>*<sup>2</sup>:=*η<sub>μν</sub>*(*P<sup>μ</sup>-X<sup>μ</sup><sub>i</sub>*)(*P<sup>ν</sup>-X<sup>ν</sup><sub>i</sub>*)=0, where *μ*, *ν* are spacetime indices and *η<sub>μν</sub>* is the Minkowski metric.
 
 To try out the code, open the Julia REPL in the directory containing ```cereal.jl``` , and run:
 
@@ -49,9 +51,9 @@ To check the result, run the function:
 cerealtest.single(1e-13,P,X)
 ```
 
-The test function ```cerealtest.single(q,P,X)``` returns ```true``` if the constraints are satisfied up a threshold value ```q```, and returns the array ```X``` if they are not.
+The test function ```cerealtest.single(q,P,X)``` returns ```true``` if the constraints *dX<sub>i</sub>*<sup>2</sup>=0 are satisfied up a threshold value ```q```, and returns the array ```X``` if they are not.
 
-Specifically, the test function computes the separation vectors ```V[i]=X[:,i]-P``` for each of the emission points ```X[:,i]``` and the intersection point ```P```, and compares the average of the ratio of the squared Minkowski norm (which should be zero) to the squared Euclidean norm for the separation vectors ```V[i]```. The test function returns ```true``` if the absolute value of the averaged ratio is less than ```q```.
+Specifically, the test function computes the separation vectors ```V[i]=X[:,i]-P``` for each of the emission points ```X[:,i]``` and the intersection point ```P```, and compares the average of the ratio of *dX<sub>i</sub>*<sup>2</sup> (which should be zero) to the squared Euclidean norm *δ<sub>μν</sub>*(*P<sup>μ</sup>-X<sup>μ</sup><sub>i</sub>*)(*P<sup>ν</sup>-X<sup>ν</sup><sub>i</sub>*) for the separation vectors ```V[i]```. The test function returns ```true``` if the absolute value of the averaged ratio is less than ```q```.
 
 For a more complete test, run the test function ```cerealtest.full(n,q)```, which performs the test described above for ```n``` randomly generated test cases. The following is an example which generates a million test cases with a threshold of ```1e-13```:
 
