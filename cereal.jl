@@ -36,14 +36,12 @@ function Frame( X::RealMtx , erm::Bool=true )
     for i=1:4
         for j=i+1:4
             V = X[:,i] - X[:,j]       # Computing difference between pts
-            if η( V , V ) > zero(tpfl)
+            b = η( V , V ) > zero(tpfl)
+            if b
                 if s<=3
                     E[:,s]=V          # Frame vector
                 end
-                b == true
                 s += 1
-            else
-                b == false
             end
         end
     end
