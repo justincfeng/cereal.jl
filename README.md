@@ -1,7 +1,9 @@
 # cereal.jl
-This is a simple, Special Relativistic Location (SRL/cereal) tool for use in relativistic positioning systems. It computes the intersection of future pointing light cones from four distinct emission points which lie on a spacelike hyperplane.
+This is a simple, Special Relativistic Location (SRL/cereal) tool for use in relativistic positioning systems. It computes the intersection of future pointing light cones from four distinct emission points which lie on a spacelike or timelike hyperplane.
 
-The algorithm is conceptually simple:
+## Algorithm
+
+The algorithm is conceptually simple for a spacelike hyperplane:
 
   1. Find and perform a Lorentz transformation such that the four points *X<sub>i</sub>* (labeled with *i* ∈ {1,2,3,4}) have the same time coordinate in the transformed frame. In the transformed frame, the four points form a tetrahedron in space at some instant in time.
 
@@ -9,7 +11,19 @@ The algorithm is conceptually simple:
 
   3. Transform back to obtain the coordinates of the intersection point in the original frame.
 
-The computed point *P* should satisfy the four constraints *dX<sub>i</sub>*<sup>2</sup>:=*η<sub>μν</sub>*(*P<sup>μ</sup>-X<sup>μ</sup><sub>i</sub>*)(*P<sup>ν</sup>-X<sup>ν</sup><sub>i</sub>*)=0, where *μ*, *ν* are spacetime indices and *η<sub>μν</sub>* is the Minkowski metric.
+The computed point *P* should satisfy the four constraints *dX<sub>i</sub>*<sup>2</sup>:=*η<sub>μν</sub>*(*P<sup>μ</sup>-X<sup>μ</sup><sub>i</sub>*)(*P<sup>ν</sup>-X<sup>ν</sup><sub>i</sub>*)=0, where *μ*, *ν* are spacetime indices and *η<sub>μν</sub>* is the Minkowski metric. 
+
+The case of a timelike hyperplane is conceptually similar, but more intricate:
+
+  1. Find and perform a Lorentz transformation such that the four points *X<sub>i</sub>* (labeled with *i* ∈ {1,2,3,4}) lie on a plane *P<sub>z</sub>* specified by a *z* coordinate in the transformed frame. In the transformed frame, the four points lie on an elliptic hyprboloid.
+
+  2. Find the vertex of the hyperboloid, and the Minkowski distance *R* from the vertex to a point on the hyperboloid. There are two intersection points. The *z* coordinate for the intersection points is a distance *R* in the direction normal to the *P<sub>z</sub>* plane.
+
+  3. Transform back to obtain the coordinates of the intersection point in the original frame.
+
+There are two intersection points in the case of a timelike hyperplane; this is known as the bifurcation problem (Coll et al., Phys. Rev. D 86, 084036 (2012)). The addition of a fifth emission point will in most cases permit the selection of a single emission point.
+
+## Example and tests
 
 To try out the code, open the Julia REPL in the directory containing ```cereal.jl``` , and run:
 
@@ -58,7 +72,7 @@ Specifically, the test function computes the separation vectors ```V[i]=X[:,i]-P
 For a more complete test, run the test function ```cerealtest.full(n,q)```, which performs the test described above for ```n``` randomly generated test cases. The following is an example which generates a million test cases with a threshold of ```1e-13```:
 
 ```julia
-cerealtest.full(1e6,1e-13)
+cerealtest.full(1e6,1e-10,1e-15)
 ```
 
 The default precision is Float64 (double precision), but one may increase the precision by using [DoubleFloats.jl](https://github.com/JuliaMath/DoubleFloats.jl) instead:
@@ -72,6 +86,6 @@ cerealtest.full(n,q)
 
 With the increased precision, the cereal code passes this test with a much lower threshold of ```1e-26```.
 
-To my knowledge, the particular algorithm implemented in this code does not yet appear in the literature, though it is a straightforward consequence of the existence of a spacelike configuration hyperplane discussed in Coll et al., Class.Quant.Grav. 27 (2010) 065013 (see also Fig. 3 of Coll et al., Phys. Rev. D 86, 084036 (2012)). The algorithm implemented here* is chosen for its conceptual simplicity. It should be mentioned that the formula described in Coll et al., Class.Quant.Grav. 27 (2010) 065013 has been implemented in Puchades et al., Astrophys.Space Sci. 341 (2012) 631-643. Another algorithm which accomplishes the same is described in Kostić et al., Class. Quantum Grav. 32 (2015) 215004 and Čadež et al., Advanced Concepts Team, ARIADNA final report (09/1301), European Space Agency, 2010.
+## Literature
 
-*It is perhaps worth mentioning that the construction of the frame here is distinct from the concept of the central observer in Pozo, J. M, Journées 2005. Systèmes de référence spatio-temporels., Pologne (2005); AIP Conference Proceedings 841, 641 (2006), and Coll et al. Phys. Rev. D 86, 084036. The frame here differs in that no restriction is placed on the properties of the tetrahedron formed by the emission points.
+To our knowledge, the particular algorithms implemented in this code do not yet appear in the literature, though they are a straightforward consequence of the existence of a spacelike or timelike configuration hyperplane discussed in Coll et al., Class.Quant.Grav. 27 (2010) 065013 (see also Fig. 3 of Coll et al., Phys. Rev. D 86, 084036 (2012)). The algorithm implemented here is chosen for its conceptual simplicity, and for its relative efficiency. It should be mentioned that the formula described in Coll et al., Class.Quant.Grav. 27 (2010) 065013 has been implemented in a code described in Puchades et al., Astrophys.Space Sci. 341 (2012) 631-643. Another algorithm which accomplishes the same is described in Kostić et al., Class. Quantum Grav. 32 (2015) 215004 and Čadež et al., Advanced Concepts Team, ARIADNA final report (09/1301), European Space Agency, 2010. Further details will be provided in an upcoming paper.

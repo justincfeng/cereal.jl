@@ -3,19 +3,25 @@ module cereal      # cereal module
 #-----------------------------------------------------------------------
 
 using LinearAlgebra
+using Combinatorics
+using Statistics
 
 const RealVec{T<:Real} = Array{T,1}      # Defining vector datatype
 const RealMtx{T<:Real} = Array{T,2}      # Defining matrix datatype
 
 #-----------------------------------------------------------------------
+#   Minkowski product and norm
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
 function η( V1::RealVec , V2::RealVec )  # Computes Minkowski product
-    nv1 = length(V1)
-    nv2 = length(V2)
+    l1 = length(V1)
+    l2 = length(V2)
 
     met = -V1[1]*V2[1]
 
-    if nv1==nv2
-        for i=2:nv1
+    if l1==l2
+        for i=2:l1
             met += V1[i]*V2[i]
         end
         return met
@@ -25,95 +31,128 @@ function η( V1::RealVec , V2::RealVec )  # Computes Minkowski product
 end  # End η
 
 #-----------------------------------------------------------------------
-function Frame( X::RealMtx , erm::Bool=true )
-    # Constructs spatial frame
-    tpfl=typeof(X[1,1])       # Extracting floating point datatype
-    s = 1       # Integer for constructing frame
-    b = true    # Boolean variable - stops routine if not spacelike
+function mnorm( V )  # Computes Minkowski norm
+    l = length(V)
 
-    E = zeros(tpfl,4,3)
+    t = abs(V[1])
+    x = norm(V[2:l])
 
-    for i=1:4
-        for j=i+1:4
-            V = X[:,i] - X[:,j]       # Computing difference between pts
-            b = η( V , V ) > zero(tpfl)
-            if b
-                if s<=3
-                    E[:,s]=V          # Frame vector
-                end
-                s += 1
-            end
-        end
-    end
-
-    if b
-        return E
+    if t > x
+        return t - ( x/t )*( x / ( 1 + √( 1 - (x/t)^2 ) ) )
+    elseif x > t
+        return x - ( t/x )*( t / ( 1 + √( 1 - (t/x)^2 ) ) )
     else
-        if erm
-            println("Points not spacelike separated")
-        end
-        return zeros(tpfl,4,3)  # Returns zeros in case of error
+        return zero( typeof(V[1]) )
     end
-end  # End Frame
+end  # End mnorm
 
 #-----------------------------------------------------------------------
-function NormVecF( E::RealMtx , erm::Bool=true )
-    # Constructs timelike normal to frame
-    tpfl=typeof(E[1,1])
-        NVr = [ E[2,3]*E[3,2]*E[4,1] - E[2,2]*E[3,3]*E[4,1] - 
-                E[2,3]*E[3,1]*E[4,2] + E[2,1]*E[3,3]*E[4,2] + 
-                E[2,2]*E[3,1]*E[4,3] - E[2,1]*E[3,2]*E[4,3]   ;
-                #
-                E[1,3]*E[3,2]*E[4,1] - E[1,2]*E[3,3]*E[4,1] - 
-                E[1,3]*E[3,1]*E[4,2] + E[1,1]*E[3,3]*E[4,2] + 
-                E[1,2]*E[3,1]*E[4,3] - E[1,1]*E[3,2]*E[4,3]   ;
-                #
-                E[1,1]*E[2,2]*E[4,3] - E[1,3]*E[2,2]*E[4,1] + 
-                E[1,2]*E[2,3]*E[4,1] + E[1,3]*E[2,1]*E[4,2] - 
-                E[1,1]*E[2,3]*E[4,2] - E[1,2]*E[2,1]*E[4,3]   ;
-                #
-                E[1,3]*E[2,2]*E[3,1] - E[1,2]*E[2,3]*E[3,1] - 
-                E[1,3]*E[2,1]*E[3,2] + E[1,1]*E[2,3]*E[3,2] + 
-                E[1,2]*E[2,1]*E[3,3] - E[1,1]*E[2,2]*E[3,3]   ]
-        norm = η( NVr , NVr )
-        if norm < zero(tpfl)
-            if NVr[1] < zero(tpfl)
-                NV = -NVr / sqrt(abs(norm))
-            elseif NVr[1] > zero(tpfl)
-                NV = NVr / sqrt(abs(norm))
-            else
-                if erm
-                println("Time component of normal vector too small.")
-                end
-                NV = zeros(tpfl,4)  # Returns zeros in case of error
-            end
-        else
-            if erm
-                println("Normal vector not timelike.")
-            end
-            NV = zeros(tpfl,4)      # Returns zeros in case of error
+#   Levi-Civita and Hodge
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function ϵ( a , b , c , d )  # Levi-Civita
+    if typeof.((a,b,c,d)) == (Int,Int,Int,Int)
+        return levicivita([a,b,c,d])
+    elseif typeof(a) <: RealVec && typeof(b) <: RealVec &&
+        typeof(c) <: RealVec && typeof(d) <: RealVec
+        v = zero( typeof(a[1]) )
+        for i=1:4, j=1:4, k=1:4, l=1:4
+            v += levicivita([i,j,k,l])*a[i]*b[j]*c[k]*d[l]
         end
-    return NV
-end  # End NormVecF
+        return v
+    else
+        return 0
+    end
+end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-function LTM( NV::RealVec )     
+function multivec( X::RealMtx , k::Int , vecvec::Bool )  
+    # Multi vector function
+    tpfl = typeof(X[1,1])
+    d    = size(X)[1]
+    np   = size(X)[2]
+    Z    = [zeros(tpfl,d) for _ in 1:np]
+
+    for i=1:np
+        Z[i] = X[:,i]
+    end
+
+    w   = collect(combinations(Z,k))
+
+    if vecvec
+        return w
+    else
+        l   = length(w)
+        z   = [zeros(tpfl,d,k) for _ in 1:l]
+        for i=1:l, j=1:k 
+                z[i][:,j] = w[i][j]
+        end
+
+        return z
+    end
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function HodgeV( U::RealVec , V::RealVec , W::RealVec )
+    # Hodge of three vectors
+    tpfl=typeof(U[1]) 
+
+    v = zeros(tpfl,4)
+    for i=1:4, j=1:4, k=1:4, l=1:4
+        v[i] += ϵ(i,j,k,l)*U[j]*V[k]*W[l]
+    end
+
+    v[1] = -v[1]    # Raise index
+
+    return v
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function Hodge2( U::RealVec , V::RealVec )
+    tpfl=typeof(U[1]) 
+
+    W = zeros(tpfl,4,4)
+    for i=1:4
+    for j=1:4
+        Z  = zero(tpfl)
+        for k=1:4
+        for l=1:4
+            Z += -cereal.ϵ(i,j,k,l)*U[k]*V[l]
+        end
+        end
+        W[i,j] = Z
+    end
+    end
+
+    return W
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+#   Transformation functions
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function LTM( NVa::RealVec )     
     # Constructs Lorentz transformation matrix
-    tpfl=typeof(NV[1])
-        l = one(tpfl)           # l has a value of one
-        γ = NV[1]               # γ is the Lorentz factor
-        δ = (γ - l)             # A useful quantity
-        NVs = NV[2]^2 + NV[3]^2 + NV[4]^2      # Square of spatial part
-        if NVs > 0              # Normalization factor check
-            nf = 1/sqrt(NVs)    # Normalization factor
-            β = sqrt(NVs/(γ*γ)) # β is v/c
-        else
-            nf = zero(tpfl)     # Set normalization factor to zero
-            β = zero(tpfl)      # β is v/c
+    tpfl=typeof(NVa[1])
+        normv = mnorm(NVa)  # Normalization factor
+        NV    = NVa/normv             # Normalize Vector
+        l     = one(tpfl)           # l has a value of one
+        γ     = NV[1]               # γ is the Lorentz factor
+        if γ<0
+            NV = -NV
+            γ  = -γ
         end
-        vx = nf*NV[2]     # x-component of unit vector
-        vy = nf*NV[3]     # y-component of unit vector
-        vz = nf*NV[4]     # z-component of unit vector
+        δ    = (γ - l)             # A useful quantity
+        norms = norm(NV[2:4])
+
+        nf = 1/norms    # Normalization factor
+        β = abs(norms/γ) # β is v/c
+
+        vx = nf*NV[2]           # x-component of unit vector
+        vy = nf*NV[3]           # y-component of unit vector
+        vz = nf*NV[4]           # z-component of unit vector
     return [  γ        -γ*β*vx       -γ*β*vy       -γ*β*vz      ;
              -γ*β*vx   l + δ*(vx^2)  δ*vx*vy       δ*vx*vz      ;
              -γ*β*vy   δ*vy*vx       l + δ*(vy^2)  δ*vy*vz      ;
@@ -121,112 +160,167 @@ function LTM( NV::RealVec )
 end  # End LTM
 
 #-----------------------------------------------------------------------
-function IPfinder( Y::RealMtx )    
-    # Finds intersection of light cones in adapted frame
-    tpfl=typeof(Y[1,1])
-
-    x = zeros(tpfl,3,4)     # Create containers
-    v = zeros(tpfl,3,3)
-
-    x[1,:] = Y[2,:]    # Spatial points for corners of tetrahedron
-    x[2,:] = Y[3,:]
-    x[3,:] = Y[4,:]
-
-    v[:,1] = x[:,2] - x[:,1]    # "Frame" vectors centered on x[:,1]
-    v[:,2] = x[:,3] - x[:,1]
-    v[:,3] = x[:,4] - x[:,1]
-    
-    B = [ x[:,2]⋅x[:,2] - x[:,1]⋅x[:,1] ; x[:,3]⋅x[:,3] - x[:,1]⋅x[:,1];
-          x[:,4]⋅x[:,4] - x[:,1]⋅x[:,1] ] / 2    # Constructing B vector
-
-    A = transpose([ v[:,1]  v[:,2]  v[:,3] ])    # Constructing A matrix
-
-    xc = inv(A)*B       # Compute circumcenter
-    rc = sqrt( (xc-x[:,1])⋅(xc-x[:,1]) )    # Distance to circumcenter
-    tc = rc + Y[1,1]    # Compute time coordinate
-    return [ tc ; xc[1] ; xc[2] ; xc[3] ]
-end  # End IPfinder
-
-#-----------------------------------------------------------------------
-function locator( X::RealMtx , erm::Bool=true , erc::Bool=false )  
-    # Special relativistic locator code
-    tpfl=typeof(X[1,1])
-
-    Y = zeros(tpfl,4,4)         # Create containers
-    Z = zeros(tpfl,4)
-
-    ERR = false
-
-    E = Frame(X,erm)           # Constructing spatial frame
-    NV = NormVecF(E,erm)       # Constructing normal vector to frame
-    if dot(NV,NV)>0 && ERR==false
-        Λ = LTM(NV)             # Lorentz transformation matrix
-
-        for i=1:4
-            Y[:,i] = Λ * X[:,i] # Lorentz transformation
-        end
-
-        XP = IPfinder(Y)        # Intersection point in adapted frame
-        ΛR = inv(Λ)             # Lorentz transformation matrix
-
-        for i=1:4
-            Z = ΛR * XP         # Lorentz transformation
-        end
-        if erc
-            return (Z,true)
+function MRz( v::RealVec )      # Rotate to z-adapted frame
+    tpfl=typeof(v[1])
+    l = one(tpfl)
+    o = zero(tpfl)
+	if length(v)==3             # 3×3 rotation matrix
+		rv=norm(v[1:3])
+		Rv=norm(v[1:2])
+        if Rv > 0 && rv > 0
+		    Cosϑ=v[3]/rv
+		    Sinϑ=Rv/rv
+		    Cosφ=v[1]/Rv
+		    Sinφ=v[2]/Rv
+		    return [ Cosϑ*Cosφ  Cosϑ*Sinφ   -Sinϑ   ;
+                     -Sinφ      Cosφ        o       ;
+                     Sinϑ*Cosφ  Sinϑ*Sinφ   Cosϑ    ]
         else
-            return Z
+            return I(3)        
+        end
+    elseif length(v)==4         # 4×4 rotation matrix
+        rv=norm(v[2:4])
+		Rv=norm(v[2:3])
+        if Rv > 0 && rv > 0
+            Cosϑ=v[4]/rv
+            Sinϑ=Rv/rv
+		    Cosφ=v[2]/Rv
+		    Sinφ=v[3]/Rv
+            return [ one(tpfl)  o           o           o       ;
+                        o       Cosϑ*Cosφ   Cosϑ*Sinφ   -Sinϑ   ;
+                        o       -Sinφ       Cosφ        o       ;
+                        o       Sinϑ*Cosφ   Sinϑ*Sinφ   Cosϑ    ]
+        else
+            return I(4)
         end
     else
-        if erm
-            println("Errors encountered, returning zero vector.")
-        end
-        if erc
-            return (zeros(tpfl,4),false)
+        return I(4)
+	end
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function MRy( v::RealVec )      # Rotate about z-axis to y-adapted frame
+    tpfl=typeof(v[1])
+    l = one(tpfl)
+    o = zero(tpfl)
+	if length(v)==3		        # 3×3 rotation matrix
+		Rv=norm(v[1:2])
+		Sinφ = v[1]/Rv
+        Cosφ = v[2]/Rv
+        if Rv > 0
+		    return [    Cosφ    -Sinφ   o           ;
+                        Sinφ    Cosφ    o           ;
+                        o       o       one(tpfl)   ]
         else
-            return zeros(tpfl,4)    # Returns zero if errors encountered
+            return I(3)
+        end
+    elseif length(v)==4         # 4×4 rotation matrix
+		Rv=norm(v[2:3])
+        if Rv > 0
+            Sinφ = v[2]/Rv
+            Cosφ = v[3]/Rv
+            return [ one(tpfl)  o       o       o           ;
+                        o       Cosφ    -Sinφ   o           ;
+                        o       Sinφ    Cosφ    o           ;
+                        o       o       o       one(tpfl)   ]
+        else
+            return I(4)
+        end
+    else
+        return I(4)
+	end
+end     #---------------------------------------------------------------
+
+function Lrot( X::RealMtx , Λ::RealMtx )  # Spacetime rotation operator
+    tpfl = typeof(X[1,1])
+
+    Xprime = zeros(tpfl,4,4)
+
+    for i=1:4
+        Xprime[:,i] = Λ*X[:,i]
+    end
+
+    return Xprime
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function NormflipS( Vsl::RealVec )    # Flip vectors
+    tpfl = typeof(Vsl[1])
+
+    normVsl = mnorm(Vsl)
+    normsq = η(Vsl,Vsl)
+
+    if Vsl[1] < 0
+        Vsl = -Vsl
+    end
+
+    norms = norm(Vsl[2:4])
+
+    if normsq > 0
+        NVsl = Vsl/normVsl
+        nlt  = NVsl[1]
+        nls  = norm(NVsl[2:4])
+        nvsl = Vsl[2:4]/norms
+        NVs  = zeros(tpfl,4)
+        NVs[1]   = nls
+        NVs[2:4] = nlt * nvsl
+        return NVs
+    else
+        return Vsl/normVsl
+    end
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+#   Sorting functions
+#-----------------------------------------------------------------------
+
+function ColSort( X::RealMtx , a::Int )  # Switch column a and column 4
+    tpfl = typeof(X[1,1])
+    Y = copy(X)
+    Y[:,a] = X[:,4]
+    Y[:,4] = X[:,a]
+    return Y
+end     #---------------------------------------------------------------
+
+function SameSort( X::RealMtx , a::Int )
+    # If three out of four columns are the same, the fourth column is
+    # moved to the end. 
+    is = sortperm(X[a,:])
+    Xs = X[:,is]
+    if abs(Xs[a,1]-Xs[a,2])>abs(Xs[a,3]-Xs[a,4])
+        return ColSort(Xs,1)
+    else
+        return Xs
+    end
+    return
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function minnorm( XA::RealMtx , XB::RealMtx , X::RealMtx )
+    # Picks out points with minimum norm
+    tpfl = typeof(XA[1,1])
+    δVA = zeros(tpfl,4)
+    δVB = zeros(tpfl,4)
+    for a=1:4
+        for i=1:4
+            δVA[a] += abs(η(X[:,i]-XA[:,a],X[:,i]-XA[:,a]))
+            δVB[a] += abs(η(X[:,i]-XB[:,a],X[:,i]-XB[:,a]))
         end
     end
-end  # End locator
+    iA = sortperm(δVA)
+    iB = sortperm(δVB)
+    Xa = XA[:,iA][:,1]
+    Xb = XB[:,iB][:,1]
+    return (Xa,Xb)
+end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-end     # End scope of module cereal
+#   Adapted frame intersection point finders
 #-----------------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-module cerealtest    # Test module for cereal
-#-----------------------------------------------------------------------
-
-using LinearAlgebra
-import ..cereal         # Importing functions from cereal
-
-const RealVec{T<:Real} = Array{T,1}      # Defining vector datatype
-const RealMtx{T<:Real} = Array{T,2}      # Defining matrix datatype
-
-#-----------------------------------------------------------------------
-function vgenerator( tpfl::DataType )    # Generates random 3-vector
-    θ = pi*rand(tpfl)
-    ϕ = 2*pi*rand(tpfl)
-    V = [   sin(θ)*cos(ϕ)   ;
-            sin(θ)*sin(ϕ)   ;
-            cos(θ)          ]
-    return V
-end  # End vgenerator
-
-#-----------------------------------------------------------------------
-function nvgenerator( tpfl::DataType )   # Generates random 4-velocity
-    v = vgenerator(tpfl)
-    v = rand(tpfl)*rand(tpfl)*v
-    V = [ one(tpfl) ; v[1] ; v[2] ; v[3] ]
-    fl = one(tpfl) / sqrt(abs(cereal.η(V,V)))
-
-    NV = fl*V
-    return NV
-end  # End nvgenerator
-
-#-----------------------------------------------------------------------
-function TVchk( Y::RealMtx , δV::Real=1e-14 )
-    # Check tetrahedron volume is > |δV|    tpfl=typeof(Y[1,1])
+function IPFinderS( Y::RealMtx )   
+    # Finds intersection of light cones in adapted frame
     tpfl=typeof(Y[1,1])
 
     x = zeros(tpfl,3,4)     # Create containers
@@ -239,103 +333,460 @@ function TVchk( Y::RealMtx , δV::Real=1e-14 )
     v[:,1] = x[:,2] - x[:,1]    # "Frame" vectors centered on x[:,1]
     v[:,2] = x[:,3] - x[:,1]
     v[:,3] = x[:,4] - x[:,1]
+    
+    B = [ x[:,2]⋅x[:,2] - x[:,1]⋅x[:,1] ; x[:,3]⋅x[:,3] - x[:,1]⋅x[:,1];
+          x[:,4]⋅x[:,4] - x[:,1]⋅x[:,1] ] / 2    # Constructing B vector
 
-    Vol = abs(det([ v[:,1]  v[:,2]  v[:,3] ]))/6    # Volume
+    A = transpose([ v[:,1]  v[:,2]  v[:,3] ])    # Constructing A matrix
 
-    if Vol > abs(δV)
-        return true
-    else
-        return false
-    end
-end  # End TVchk
+    xc = inv(A)*B           # Compute circumcenter
+    rc = (norm(xc-x[:,1]) + norm(xc-x[:,2]) + # Distance to circumcenter
+          norm(xc-x[:,3]) + norm(xc-x[:,4])) / 4
+    tc = rc + Y[1,1]        # Compute time coordinate
+    return [ tc ; xc[1] ; xc[2] ; xc[3] ]
+end  # End IPfinder
 
 #-----------------------------------------------------------------------
-function pointgenerator( tpfl::DataType , δV::Real=1e-14 )     
-    # Generates four random points W all with same time coordinate
-    b = false
+function IPFinderTs( Y::RealMtx )   
+    # Finds intersection of light cones in adapted frame
+    # Spacelike subconfiguration plane
+    tpfl=typeof(Y[1,1])
 
-    W = zeros(tpfl,4,4)
+    #   Defining variables
+    z  = ( Y[4,1] + Y[4,2] + Y[4,3] + Y[4,4] )/4
+    ( t1 , t2 , t3 ) = ( Y[1,1] , Y[1,2] , Y[1,3] )
+    ( x1 , x2 , x3 ) = ( Y[2,1] , Y[2,2] , Y[2,3] )
+    ( y1 , y2 , y3 ) = ( Y[3,1] , Y[3,2] , Y[3,3] )
+    ( t4 , x4 , y4 ) = ( Y[1,4] , Y[2,4] , Y[3,4] )
 
-    while b == false
-        V1 = (one(tpfl)+rand(tpfl))*vgenerator(tpfl)/(2*one(tpfl))
-        V2 = (one(tpfl)+rand(tpfl))*vgenerator(tpfl)/(2*one(tpfl))
-        V3 = (one(tpfl)+rand(tpfl))*vgenerator(tpfl)/(2*one(tpfl))
-        V4 = (one(tpfl)+rand(tpfl))*vgenerator(tpfl)/(2*one(tpfl))
+    #   Circumcenter coordinates:
+    xc = (
+            x3^2*(y1 - y2) + 
+            (x1^2 + (y1 - y2)*(y1 - y3))*(y2 - y3) + 
+            x2^2*(-y1 + y3)
+         )/(2*(x3*(y1 - y2) + x1*(y2 - y3) + x2*(-y1 + y3)))
 
-        Vt = rand(tpfl)
+    yc = (
+            -(x2^2*x3) + x1^2*(-x2 + x3) + x3*(y1 - y2)*(y1 + y2) + 
+            x1*(x2^2 - x3^2 + y2^2 - y3^2) + 
+            x2*(x3^2 - y1^2 + y3^2)
+         )/(2*(x3*(y1 - y2) + x1*(y2 - y3) + x2*(-y1 + y3)))
+    
+    #   Circumcircle radius:
+    r  = ( norm([x1-xc;y1-yc]) + norm([x2-xc;y2-yc]) +
+           norm([x3-xc;y3-yc]) ) / 3
+    
+    #   Circumcircle radius squared:
+    rs = ( (x1 - xc)^2 + (y1 - yc)^2 + (x2 - xc)^2 + (y2 - yc)^2 +
+           (x3 - xc)^2 + (y3 - yc)^2 ) / 3
+    
+    #   Time coordinate calculation
+    tc  = (-rs + t1^2 - t4^2 + (x4 - xc)^2 + (y4 - yc)^2)/(2*(t1 - t4))
 
-        W = [   Vt     Vt     Vt     Vt     ;
-                V1[1]  V2[1]  V3[1]  V4[1]  ;
-                V1[2]  V2[2]  V3[2]  V4[2]  ;
-                V1[3]  V2[3]  V3[3]  V4[3]  ]
+    #   Hyperboloid distance calculation
+    R = mnorm( [ tc-t1 ; r ] )
+
+    #   z coordinate
+    Δz = R
+
+    return  (   [ tc ; xc ; yc ; z + Δz ] 
+              , [ tc ; xc ; yc ; z - Δz ] )
+end  # End IPfinder
+
+#-----------------------------------------------------------------------
+function IPFinderTt( Y::RealMtx )   
+    # Finds intersection of light cones in adapted frame
+    # Timelike subconfiguration plane
+    tpfl=typeof(Y[1,1])
+
+    #   Defining variables
+    z  = ( Y[4,1] + Y[4,2] + Y[4,3] + Y[4,4] )/4
+    ( t1 , t2 , t3 ) = ( Y[1,1] , Y[1,2] , Y[1,3] )
+    ( x1 , x2 , x3 ) = ( Y[2,1] , Y[2,2] , Y[2,3] )
+    ( y1 , y2 , y3 ) = ( Y[3,1] , Y[3,2] , Y[3,3] )
+    ( t4 , x4 , y4 ) = ( Y[1,4] , Y[2,4] , Y[3,4] )
+    
+    #   Hyperbola vertex coordinates:
+    tc = (  t1^2*(x2 - x3) + t2^2*(x3 - x1) + 
+            (x1 - x2)*(t3^2 + (x1 - x3)*(x3 - x2)) 
+            )/
+            ( 2*(t3*(x1 - x2) + t1*(x2 - x3) + t2*(x3 - x1)) )
+    
+    xc = (  t1^2*(t2 - t3) + t2^2*t3 + t3*(x1 - x2)*(x1 + x2) - 
+            t2*(t3^2 + x1^2 - x3^2) + t1*(-t2^2 + t3^2 + x2^2 - x3^2)
+            )/
+            ( 2*(t3*(x1 - x2) + t1*(x2 - x3) + t2*(x3 - x1)) )
+    
+    #   Hyperbola distance calculation:
+    ρs = (  (t1 - tc)^2 - (x1 - xc)^2 + (t2 - tc)^2 - (x2 - xc)^2 +
+            (t3 - tc)^2 - (x3 - xc)^2  ) / 3
+    
+    #   Hyperboloid vertex y coordinate
+    yc = -(1/2)*(-(t4 - tc)^2 + (x4 - xc)^2 - y1^2 + y4^2 + ρs
+                )/
+                (y1 - y4)
+    
+    #   Hyperboloid distance calculation:
+    R  = (  mnorm( [t1-tc;x1-xc;y1-yc] ) + mnorm( [t2-tc;x2-xc;y2-yc] ) +
+            mnorm( [t3-tc;x3-xc;y3-yc] ) ) / 3
+    
+    #   z coordinate distance:
+    Δz = R
+
+    return  (   [ tc ; xc ; yc ; z + Δz ] 
+              , [ tc ; xc ; yc ; z - Δz ] )
+end  # End IPfinder
+
+#-----------------------------------------------------------------------
+#   Locator functions
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function slocator( X::RealMtx , erm::Bool=true , q::Real=1e-14 )
+    #   Computes location from a single set of four emission points
+    tpfl = typeof(q*X[1,1])
+    XF = tpfl.(X)
+
+    #   Containers
+        u   = zeros(tpfl,4)
+        nv  = zeros(tpfl,4)
+        mv  = zeros(tpfl,4)
+        Xc  = zeros(tpfl,4)
+
+        XA = zeros(tpfl,4,4)
+        XB = zeros(tpfl,4,4)
+
+        Mz  = zeros(tpfl,4,4)
+        My  = zeros(tpfl,4,4)
+        Λ   = zeros(tpfl,4,4)
+
+    #   Combinations stuff
+        w   = multivec(XF,3,true)[sort(1:4,rev=true)]
+
+    #   Normal vector calculations
+        for a=1:4
+            u  = HodgeV( w[a][1]-XF[:,a] , w[a][2]-XF[:,a] , 
+                         w[a][3]-XF[:,a] )
+            nv    += u*(-1)^(a)
+        end
+
+    if η(nv,nv) < 0         # Timelike normal vector n
+        #---------------------------------------------------------------
+        #   Computation for spacelike configuration plane
+        #---------------------------------------------------------------
+        Λ  = LTM(nv)
+        Xc = inv(Λ)*IPFinderS( Lrot(XF,Λ) )
+        return (Xc,Xc)
+    elseif η(nv,nv) > 0     # Spacelike normal vector n
+        #---------------------------------------------------------------
+        #   Computation for timelike configuration plane
+        #---------------------------------------------------------------
+        Λn  = LTM(NormflipS(nv))
+        Mz  = MRz(nv)
+        for a=1:4
+            #   Calculate normal to plane spanned by subset of 3 vectors
+            mv    = HodgeV(nv,w[a][2]-w[a][1],w[a][3]-w[a][1])
+            mv    = mv/mnorm(mv)
+            if η(mv,mv) < 0         # Timelike normal vector m
+                Λ     = LTM(Mz*Λn*mv)*Mz*Λn
+                (XA[:,a],XB[:,a]) = 
+                    IPFinderTs(SameSort(ColSort(Lrot(XF,Λ),a),1))
+            elseif η(mv,mv) > 0     # Spacelike normal vector m
+                Λy    = LTM(NormflipS(Mz*Λn*mv))
+                Λy    = Λy*Mz*Λn
+                My    = MRy(Λy*mv)
+                Λ     = My*Λy
+                (XA[:,a],XB[:,a]) = 
+                    IPFinderTt(ColSort(Lrot(XF,Λ),a))
+            elseif η(mv,mv) == 0    # Null normal vector m
+                if erm
+		            print("mv norm zero.")
+                    (XA[:,a],XB[:,a]) = (Xc,Xc)
+                end
+            end
+        end
+        #   Returns result with smallest Minkowski norm
+        return minnorm( Lrot(XA,inv(Λ)) , Lrot(XB,inv(Λ)) , X )
+    elseif η(nv,nv) == 0     # Null normal vector n
+        if erm
+		    print("nv norm zero.")
+        end
+        return (Xc,Xc)
+    end
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function mlocator( X::RealMtx , erm::Bool=true , q::Real=1e-14 )
+    #   Calculates location for more than four emission points
+    tpfl = typeof(q*X[1,1])
+
+    l = size(X)
+
+    XF = tpfl.(X)
+
+    if l[2] == 4
+        return slocator(XF,erm)
+    elseif l[2] > 4
+        W   = multivec(X,4,false)
+
+        k = length(W)
+        Xa  = [(zeros(tpfl,4),zeros(tpfl,4)) for _ =1:k ]
+        VV  = (zeros(tpfl,4),zeros(tpfl,4))
+        w   = [zeros(tpfl,4) for _ =1:2*k ]
+
+        for a=1:k
+            (w[a],w[k+a]) = slocator( W[a] , erm , q )
+        end
+
+        #   The following picks out points closely clustered together
+            k = length(w)
+            ΔVm   = [zeros(tpfl,4) for _ =1:k ]
+            ΔVp   = [zeros(tpfl,4) for _ =1:k ]
+            δV    = zeros(tpfl,k)
+
+            #   Sort points according to their norm
+            wn     = norm.(w)
+            iws    = sortperm(wn)
+            ws     = w[iws]
         
-        b = TVchk(W,δV)
+            #   Compute differences between points
+            j = 0
+            for i=2:k-1
+                ΔVm[i] = (ws[i] - ws[i-1])
+                ΔVp[i] = (ws[i+1] - ws[i])
+                δV[i]  = sort( [dot(ΔVm[i],ΔVm[i]),
+                                dot(ΔVp[i],ΔVp[i]) ] )[1]
+        
+                if dot(ΔVm[i],ΔVm[i]) < q || dot(ΔVp[i],ΔVp[i]) < q
+                    j += 1
+                end
+        
+                if i == 2 && dot(ΔVm[i],ΔVm[i]) < q
+                    j += 1    
+                elseif i == k-1 && dot(ΔVp[i],ΔVp[i]) < q
+                    j += 1
+                end
+            end
+            δV[1] = dot(ΔVm[2],ΔVm[2])
+            δV[k] = dot(ΔVp[k-1],ΔVp[k-1])
+
+            #   Return index vector for sorting of differences
+            is    = sortperm(δV)
+
+            #   The following should return vectors closely clustered
+            WS = ws[is][1:j]
+
+        #   Re-sort location points according to smallest Minkowski norm
+            δW = zeros(tpfl,j)
+            for a=1:j
+                for i=1:4
+                    δW[a] += abs(η(X[:,i]-WS[a],X[:,i]-WS[a]))
+                end
+            end
+            iW = sortperm(δW)
+
+            return (WS[iW][1],zeros(tpfl,4))
+    end
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+end     # End scope of module cereal
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+module ceval    # Evaluation module for cereal
+#-----------------------------------------------------------------------
+
+using LinearAlgebra
+import ..cereal         # Importing functions from cereal
+
+const RealVec{T<:Real} = Array{T,1}      # Defining vector datatype
+const RealMtx{T<:Real} = Array{T,2}      # Defining matrix datatype
+
+#-----------------------------------------------------------------------
+#   Point generators
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function vgenerator( tpfl::DataType )    # Generates random 3-vector
+    b = false
+    v = zeros(tpfl,3)
+
+    while b == false    # Generate random points in a unit box
+        vx = 2*(rand(tpfl)-1/2)
+        vy = 2*(rand(tpfl)-1/2)
+        vz = 2*(rand(tpfl)-1/2)
+        vl = norm([vx;vy;vz])
+        if vl>1         # Cut out points outside unit sphere
+            b = false
+        else
+            b = true
+        end
+        v = tpfl[ vx ; vy ; vz ]/vl     # Normalization
+    end
+    return v
+end  # End vgenerator
+
+#-----------------------------------------------------------------------
+function nullgen( tpfl::DataType )   
+    # Generates random past-directed null vector
+    v = vgenerator(tpfl)
+
+    V = [ -norm(v) ; v[1] ; v[2] ; v[3] ]
+
+    return V
+end  # End nvgenerator
+
+#-----------------------------------------------------------------------
+function pgen( tpfl::DataType , N::Int=4 )     
+    # Generates N random emission points on past null cone of Xc
+
+    v = (1 + rand(tpfl))*vgenerator(tpfl)
+    
+    Xc = [  1 + rand(tpfl) ; v[1] ; v[2] ; v[3] ]   # Generate Xc
+
+    X = zeros(tpfl,4,N)     # Create container
+
+    for i=1:N
+        λ = (0.5+rand(tpfl))      # Affine parameter
+        k = nullgen(tpfl)   # Null vector
+        X[:,i] = Xc + λ*k   # Emission point
     end
 
-    return W
+    return (X,Xc)           # Return emission points and target point Xc
 end  # End pointgenerator
 
 #-----------------------------------------------------------------------
-function LT( W::RealMtx, NV::RealVec )     
-    # Lorentz transforms W to frame where vector NV is in t direction
-    tpfl=typeof(W[1,1])
-    l = one(tpfl)           # l has a value of one
-    Z = zeros(tpfl,4,4)
+function xgen( xc::Real , r1::Real , r2::Real=r1 , N::Int=4 )
+    # Generates N random emission points on past null cone of [0;xc;0;0]
+    tpfl = typeof(xc)
+	X = zeros(tpfl,4,N)	
+	for i=1:N
+		if r1 != r2
+			r = (r2-r1)*rand(tpfl) + r1
+		else
+			r = r1
+		end
+		ϑ = acos(2*rand(tpfl) - 1)
+		φ = 2*π*rand(tpfl)
+		x = r*sin(ϑ)*cos(φ)
+		y = r*sin(ϑ)*sin(φ)
+		z = r*cos(ϑ)
+		X[1,i] = - norm(tpfl[(x - xc);y;z])
+		X[2,i] = x
+		X[3,i] = y
+		X[4,i] = z
+	end	#end for
+	return (X,tpfl[0;xc;0;0])
+end	# End xgen
 
-    Λ = cereal.LTM(NV)
-    β = rand(tpfl)/(tpfl(2))
-    γ = l/sqrt( l - β^2 )
-    δ = ( γ - l )
+#-----------------------------------------------------------------------
+#   Comparison function
+#-----------------------------------------------------------------------
 
-    vx = β*NV[1]            # components of unit vector
-    vy = β*NV[2]
-    vz = β*NV[3]
+#-----------------------------------------------------------------------
+function compdirect( q::Real , P::RealVec , Xc::RealVec )
+    # Checks if location points P are recovered
+    tpfl=typeof(q)
 
-    Λ = [  γ        -γ*β*vx        -γ*β*vy       -γ*β*vz       ;
-           -γ*β*vx   l + δ*(vx^2)  δ*vx*vy       δ*vx*vz       ;
-           -γ*β*vy   δ*vy*vx       l + δ*(vy^2)  δ*vy*vz       ;
-           -γ*β*vz   δ*vz*vx       δ*vz*vy       l + δ*(vz^2)  ]
+    δ = norm(P-Xc,1) / norm(P,1)
+
+    if δ < abs(q)
+        return ( true  , δ )
+    else
+        return ( false , δ )
+    end
+end  # End compdirect
+
+#-----------------------------------------------------------------------
+function nrat( V::RealVec )        # Norm ratio
+    return abs(cereal.η(V,V)/dot(V,V))
+end  # End nrat
+
+#-----------------------------------------------------------------------
+function compnull( q::Real , P1::RealVec , P2::RealVec , X::RealMtx , 
+                   Xc::RealVec )
+    # Checks if separation vectors are null
+    # This is not used; nrat is too sensitive to machine precision errs.
+    tpfl=typeof(q)
+
+    VT1 = [ nrat( P1 - X[:,1] ) ; nrat( P1 - X[:,2] ) ;
+            nrat( P1 - X[:,3] ) ; nrat( P1 - X[:,4] ) ]
+
+    VT2 = [ nrat( P2 - X[:,1] ) ; nrat( P2 - X[:,2] ) ;
+            nrat( P2 - X[:,3] ) ; nrat( P2 - X[:,4] ) ]
+
+    A1  = ( VT1[1] + VT1[2] + VT1[3] + VT1[4] ) / 4
+    A2  = ( VT2[1] + VT2[2] + VT2[3] + VT2[4] ) / 4
+
+    Δ   = cereal.Delta(X)
+    χ   = Δ[2]
+
+    if A1 < q && A2 < q
+        return ( true  , X , A1 , A2 , Xc , P1 , P2 , Δ[1] ,
+                cereal.η(χ,χ) )
+    else
+        return ( false , X , A1 , A2 , Xc , P1 , P2 , Δ[1] ,
+                cereal.η(χ,χ) )
+    end
+end  # End compnull
+
+#-----------------------------------------------------------------------
+function Delta( X::RealMtx )
+    tpfl=typeof(X[1,1])
+
+    E = zeros(tpfl,4,3)
+
+    for i=1:3
+        E[:,i] = X[:,i] - X[:,4]
+    end
+
+    χ = cereal.HodgeV(E[:,1],E[:,2],E[:,3])
+
+    ξ = ones(tpfl,4)
+
+    if χ[1] != 0.0
+        ξ[1] = ( 1.0 - (χ[2]*ξ[2] + χ[3]*ξ[3] + χ[4]*ξ[4]) ) / χ[1]
+    else
+        ξ = ξ/(χ[2]*ξ[2] + χ[3]*ξ[3] + χ[4]*ξ[4])
+    end
+
+    h23 = cereal.Hodge2( E[:,2] , E[:,3] )
+    h31 = cereal.Hodge2( E[:,3] , E[:,1] )
+    h12 = cereal.Hodge2( E[:,1] , E[:,2] )
+
+    Ω1 = cereal.η(E[:,1],E[:,1])/2
+    Ω2 = cereal.η(E[:,2],E[:,2])/2
+    Ω3 = cereal.η(E[:,3],E[:,3])/2
+
+    H  = Ω1*h23 + Ω2*h31 + Ω3*h12
+
+    ys = zeros(tpfl,4)
 
     for i=1:4
-        Z[:,i] = Λ * W[:,i]         # Lorentz transformation
+    Z  = zero(tpfl)
+    for j=1:4
+        Z += ξ[j]*H[j,i]
     end
-    return Z
-end  # End LT
-
-#-----------------------------------------------------------------------
-function epgen( tpfl::DataType=Float64 , δV::Real=1e-14 )    
-    # Randomly generates emission pts
-    W  = pointgenerator(tpfl,δV)
-    NV = nvgenerator(tpfl)
-    return LT(W,NV)
-end  # End epgen
-
-#-----------------------------------------------------------------------
-function nsqr( V1::RealVec )        # Squared norm ratio
-    return abs(cereal.η(V1,V1)/(V1⋅V1))
-end  # End nsqr
-
-#-----------------------------------------------------------------------
-function single( q::Real , P::RealVec , X::RealMtx )
-    # Checks if separation vectors are null
-    tpfl=typeof(q)
-    Y = copy(P)
-
-    VT = [ nsqr( Y - X[:,1] ) ; nsqr( Y - X[:,2] ) ;
-           nsqr( Y - X[:,3] ) ; nsqr( Y - X[:,4] ) ]
-
-    av = ( VT[1] + VT[2] + VT[3] + VT[4] ) / (4*one(tpfl))
-
-    if av < q
-        return true
-    else
-        return ( X , av )
+    ys[i] = Z
     end
-end  # End single
+
+    ys = ys / cereal.η(ξ,χ)
+
+    ys[1] = -ys[1]
+
+    Δ = cereal.η(ys,χ)^2 - cereal.η(ys,ys)*cereal.η(χ,χ)
+
+    return (Δ,cereal.η(χ,χ))
+end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-function full( iters::Number , q::Real , δV::Real=1e-14 
-               , erm::Bool=true , counter::Bool=true )
+#   Test functions
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function full( iters::Number , q::Real , ctol::Real , erm::Bool=true , 
+               counter::Bool=true )
     # Main test function--q determines floating point datatype
     tpfl=typeof(q)
     lb=false
@@ -346,18 +797,16 @@ function full( iters::Number , q::Real , δV::Real=1e-14
         if counter
             print("\r$i")
         end
-        while B
-            X = epgen(tpfl,δV)
-            P = cereal.locator(X,erm,true)
-            b = single(q,P[1],X)
-            if b != true
-                print("\n", b[2],"\n")
-                lb = true
-                mi += 1
-            end
-            if P[2]
-                B = false
-            end
+        Xp  = pgen(tpfl,4)
+        P   = cereal.slocator(Xp[1],erm,ctol)
+        Sda  = compdirect(q,P[1],Xp[2])
+        Sdb  = compdirect(q,P[2],Xp[2])
+        # Sn   = compnull(q,P[1],P[2],Xp[1],Xp[2])
+        if Sda[1] != true && Sdb[1] != true # || Sn[1] != true
+            print("\n",Xp[1],"\n",Xp[2],"\n",P[1],"\n",P[2],"\n",
+                  Sda[2]," ",Sdb[2],"\n")
+            lb = true
+            mi += 1
         end
     end
     if lb
@@ -367,6 +816,71 @@ function full( iters::Number , q::Real , δV::Real=1e-14
         print("\rTest ended with zero failed cases out of ",iters," \n")
     end
 end  # End full
+
+#-----------------------------------------------------------------------
+function xtest( iters::Number , q::Real , ctol::Real , erm::Bool=true ,
+                counter::Bool=true )
+    tpfl=typeof(q)
+    lb=false
+    mi = zero(Int64)
+
+    for i=1:Int64(iters)
+        B = true
+        if counter
+            print("\r$i")
+        end
+	    xc  = tpfl(50 + rand(tpfl)*50)
+	    X   = xgen(xc,tpfl(10))
+        P   = cereal.slocator(X[1],erm,ctol)
+        Sda = compdirect(q,P[1],X[2])
+        Sdb = compdirect(q,P[2],X[2])
+        Δ   = Delta( X[1] )
+        # Sn   = compnull(q,P[1],P[2],Xp[1],Xp[2])
+        if Sda[1] != true && Sdb[1] != true # || Sn[1] != true
+            print("\n",X[1],"\n",X[2],"\n",P[1],"\n",P[2],"\n",Δ,"\n",
+                  Sda[2]," ",Sdb[2],"\n")
+            lb = true
+            mi += 1
+        end
+    end
+    if lb
+        print("\rTest ended with ",mi," failed cases out of "
+              ,iters," \n")
+    else
+        print("\rTest ended with zero failed cases out of ",iters," \n")
+    end
+end # End fullTetra0
+
+#-----------------------------------------------------------------------
+function fullmulti( iters::Number , q::Real , ctol::Real , N::Number=5 ,
+                    erm::Bool=true , counter::Bool=true )
+    # Main test function--q determines floating point datatype
+    tpfl    = typeof(q)
+    lb      = false
+    mi      = zero(Int64)
+    P       = zeros(tpfl,4)
+
+    for i=1:Int64(iters)
+        if counter
+            print("\r$i")
+        end
+        Xp  = pgen(tpfl,N)
+        P   = cereal.mlocator(Xp[1],erm,ctol)
+        Sd  = compdirect(q,P[1],Xp[2])
+        if Sd[1] != true
+            print("\n",Xp[1],"\n",Xp[2],"\n",Sd[2],"\n")
+            lb  = true
+            mi  += 1
+        end
+    end
+    if lb
+        print("\rTest ended with ",mi," failed cases out of "
+                ,iters," \n")
+    else
+        print("\rTest ended with zero failed cases out of "
+                ,iters," \n")
+    end
+end  # End fullmulti
 
 #-----------------------------------------------------------------------
 end     # End scope of module cerealtest
