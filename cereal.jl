@@ -478,6 +478,10 @@ function mlocator( X::RealMtx , q::Real=1e-14 , erm::Bool=true )
             #   Return index vector for sorting of differences
             is    = sortperm(δV)
 
+            if j==0
+                j=1
+            end
+
             #   The following should return vectors closely clustered
             WS = ws[is][1:j]
 
@@ -546,14 +550,14 @@ end  # End nvgenerator
 function pgen( tpfl::DataType , N::Int=4 )     
     # Generates N random emission points on past null cone of Xc
 
-    v = (1 + rand(tpfl))*vgenerator(tpfl)
+    v = (one(tpfl) + rand(tpfl))*vgenerator(tpfl)
     
-    Xc = [  1 + rand(tpfl) ; v[1] ; v[2] ; v[3] ]   # Generate Xc
+    Xc = [ one(tpfl) + rand(tpfl) ; v[1] ; v[2] ; v[3] ]   # Generate Xc
 
     X = zeros(tpfl,4,N)     # Create container
 
     for i=1:N
-        λ = (0.5+rand(tpfl))      # Affine parameter
+        λ = (one(tpfl)+rand(tpfl))      # Affine parameter
         k = nullgen(tpfl)   # Null vector
         X[:,i] = Xc + λ*k   # Emission point
     end
@@ -564,6 +568,7 @@ end  # End pointgenerator
 #-----------------------------------------------------------------------
 function xgen( xc::Real , r1::Real , r2::Real=r1 , N::Int=4 )
     # Generates N random emission points on past null cone of [0;xc;0;0]
+    # at radius r s.t. r1<r<r2
     tpfl = typeof(xc)
 	X = zeros(tpfl,4,N)	
 	for i=1:N
@@ -581,7 +586,15 @@ function xgen( xc::Real , r1::Real , r2::Real=r1 , N::Int=4 )
 		X[3,i] = y
 		X[4,i] = z
 	end	#end for
-	return (X,tpfl[0;xc;0;0])
+
+    v = zeros(tpfl,3,3)
+    # Tetrahedron volume calculator 
+    v[:,1] = X[2:4,2] - X[2:4,1]
+    v[:,2] = X[2:4,3] - X[2:4,1]
+    v[:,3] = X[2:4,4] - X[2:4,1]
+    vol = abs(det([ v[:,1]  v[:,2]  v[:,3] ]))/6
+
+	return (X,tpfl[0;xc;0;0],vol)
 end	# End xgen
 
 #-----------------------------------------------------------------------
@@ -638,9 +651,7 @@ end  # End compnull
 #-----------------------------------------------------------------------
 function Delta( X::RealMtx )
     tpfl=typeof(X[1,1])
-
     E = zeros(tpfl,4,3)
-
     for i=1:3
         E[:,i] = X[:,i] - X[:,4]
     end
@@ -681,7 +692,10 @@ function Delta( X::RealMtx )
 
     Δ = cereal.η(ys,χ)^2 - cereal.η(ys,ys)*cereal.η(χ,χ)
 
-    return (Δ,cereal.η(χ,χ))
+    den = abs(cereal.η(ys,ys))
+
+    return (Δ/den,abs(cereal.η(ys,χ))/den,cereal.η(χ,χ)/den,
+            cereal.η(χ,χ)*den/(abs(cereal.η(ys,χ))^2))
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
@@ -701,14 +715,16 @@ function full( iters::Number , q::Real , erm::Bool=true ,
         if counter
             print("\r$i")
         end
-        Xp  = pgen(tpfl,4)
-        P   = cereal.slocator(tpfl.(Xp[1]),erm)
+        Xp   = pgen(tpfl,4)
+        P    = cereal.slocator(tpfl.(Xp[1]),erm)
         Sda  = compdirect(q,P[1],Xp[2])
         Sdb  = compdirect(q,P[2],Xp[2])
+        Δ    = Delta( tpfl.(Xp[1]) )
         # Sn   = compnull(q,P[1],P[2],Xp[1],Xp[2])
         if Sda[1] != true && Sdb[1] != true # || Sn[1] != true
             print("\n",Xp[1],"\n",Xp[2],"\n",P[1],"\n",P[2],"\n",
-                  Sda[2]," ",Sdb[2],"\n")
+                  Δ[1]," ",Δ[2]," ",Δ[3]," ",Δ[4]," ","\n",
+                  sort([Sda[2],Sdb[2]])[1],"\n")
             lb = true
             mi += 1
         end
@@ -733,16 +749,17 @@ function xtest( iters::Number , q::Real , erm::Bool=true ,
         if counter
             print("\r$i")
         end
-	    xc  = tpfl(50 + rand(tpfl)*50)
-	    X   = xgen(xc,tpfl(10))
+	    xc  = tpfl(2 + rand(tpfl))
+	    X   = xgen(xc,tpfl(1))
         P   = cereal.slocator(tpfl.(X[1]),erm)
         Sda = compdirect(q,P[1],X[2])
         Sdb = compdirect(q,P[2],X[2])
         Δ   = Delta( X[1] )
         # Sn   = compnull(q,P[1],P[2],Xp[1],Xp[2])
         if Sda[1] != true && Sdb[1] != true # || Sn[1] != true
-            print("\n",X[1],"\n",X[2],"\n",P[1],"\n",P[2],"\n",Δ,"\n",
-                  Sda[2]," ",Sdb[2],"\n")
+            print("\n",X[1],"\n",X[2],"\n",P[1],"\n",P[2],"\n",
+                  Δ[1]," ",Δ[2]," ",Δ[3]," ",Δ[4]," ","\n",
+                  X[3]," ",sort([Sda[2],Sdb[2]])[1],"\n")
             lb = true
             mi += 1
         end
@@ -753,7 +770,7 @@ function xtest( iters::Number , q::Real , erm::Bool=true ,
     else
         print("\rTest ended with zero failed cases out of ",iters," \n")
     end
-end # End fullTetra0
+end # End xtest
 
 #-----------------------------------------------------------------------
 function fullmulti( iters::Number , q::Real ,
@@ -787,5 +804,5 @@ function fullmulti( iters::Number , q::Real ,
 end  # End fullmulti
 
 #-----------------------------------------------------------------------
-end     # End scope of module cerealtest
+end     # End scope of module ceval
 #-----------------------------------------------------------------------
