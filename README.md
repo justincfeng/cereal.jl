@@ -25,6 +25,8 @@ There are two intersection points in the case of a timelike hyperplane; this is 
 
 ## Example and tests
 
+### Four emission points
+
 To try out the code, open the Julia REPL in the directory containing ```cereal.jl``` , and run:
 
 ```julia
@@ -32,16 +34,16 @@ include("cereal.jl")
 ```
 In the REPL, you can change directory using the command ```cd("[directory]")```, with ```[directory]``` being the directory containing ```cereal.jl```.
 
-The following generates an 4x4 array array ```X```, the column vectors of which are the coordinates for each emission point:
+The following generates an 4x4 array array ```X```, the column vectors of which are the coordinates for each emission point, and the intersection point ```Xc```
 
 ```julia
-X = cerealtest.epgen(Float64)
+(X,Xc) = ceval.pgen(Float64)
 ```
 For higher precision calculations, one can use [DoubleFloats.jl](https://github.com/JuliaMath/DoubleFloats.jl):
 
 ```julia
 using DoubleFloats
-X = cerealtest.epgen(Double64)
+(X,Xc) = ceval.pgen(Double64)
 ```
 
 Alternatively, ```X``` may be typed explicitly (by default, the elements will be interpreted as double precision [Float64] values):
@@ -53,38 +55,67 @@ X = [   0.444567   0.382671   0.422239   0.448663   ;
        -0.693082  -0.274554  -0.381769   0.595151   ]
 ```
 
-To compute the intersection point, run
+To compute the intersection points (the location code returns two), run
 
 ```julia
-P = cereal.locator(X)
+P = cereal.slocator(X)
 ```
 
-To check the result, run the function:
+To check the result for each point ```P[1]``` and ```P[2]```, run the function:
 
 ```julia
-cerealtest.single(1e-13,P,X)
+q = 1e-7
+ceval.compdirect(q,P[1],Xc)
+ceval.compdirect(q,P[2],Xc)
 ```
 
-The test function ```cerealtest.single(q,P,X)``` returns ```true``` if the constraints *dX<sub>i</sub>*<sup>2</sup>=0 are satisfied up a threshold value ```q```, and returns the array ```X``` if they are not.
+The first element of the output for the test function ```cerealtest.single(q,P,Xc)``` is ```true``` if the L1 norm of ```P-Xc``` (rescaled according to the L1 norm of ```Xc```) is smaller than a threshold value ```q```, and ```false``` otherwise. THe second element is the quantity being compared ```norm(P-Xc,1)/norm(Xc,1)```.
 
-Specifically, the test function computes the separation vectors ```V[i]=X[:,i]-P``` for each of the emission points ```X[:,i]``` and the intersection point ```P```, and compares the average of the ratio of *dX<sub>i</sub>*<sup>2</sup> (which should be zero) to the squared Euclidean norm *δ<sub>μν</sub>*(*P<sup>μ</sup>-X<sup>μ</sup><sub>i</sub>*)(*P<sup>ν</sup>-X<sup>ν</sup><sub>i</sub>*) for the separation vectors ```V[i]```. The test function returns ```true``` if the absolute value of the averaged ratio is less than ```q```.
-
-For a more complete test, run the test function ```cerealtest.full(n,q)```, which performs the test described above for ```n``` randomly generated test cases. The following is an example which generates a million test cases with a threshold of ```1e-13```:
+For a more complete test, run the test function ```cerealtest.full(n,q)```, which performs the test described above for ```n``` randomly generated test cases. The following is an example which generates a million test cases with a threshold of ```1e-6```:
 
 ```julia
-cerealtest.full(1e6,1e-10,1e-15)
+n = Int64(1e6)
+q = 1e-6
+ceval.full(n,q)
 ```
 
-The default precision is Float64 (double precision), but one may increase the precision by using [DoubleFloats.jl](https://github.com/JuliaMath/DoubleFloats.jl) instead:
+The default precision is Float64 (double precision), and one typically has 1-3 failed cases with the specified threshold. One may increase the precision by using [DoubleFloats.jl](https://github.com/JuliaMath/DoubleFloats.jl) instead:
 
 ```julia
 using DoubleFloats
 n = Int64(1e6)
-q = Double64(1e-26)
+q = Double64(1e-18)
 cerealtest.full(n,q)
 ```
 
-With the increased precision, the cereal code passes this test with a much lower threshold of ```1e-26```.
+With the increased precision, the cereal code passes this test with a much lower threshold of ```1e-18```.
+
+### Five or more emission points
+
+One may generate more five emission points with the following:
+
+```julia
+using DoubleFloats
+N = 5
+(X,Xc) = ceval.pgen(Double64,N)
+```
+
+The function ```mlocator``` computes a single intersection point in the first element:
+
+```julia
+q = Double64(1e-20)
+p = cereal.mlocator(X,q)[1]
+ceval.compdirect(q,p,Xc)
+```
+
+For the full test, one may perform the following test:
+```julia
+using DoubleFloats
+N = 5
+n = Int64(1e6)
+q = Double64(1e-20)
+cerealtest.fullmulti(n,q,N)
+```
 
 ## Literature
 

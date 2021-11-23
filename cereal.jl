@@ -38,9 +38,9 @@ function mnorm( V )  # Computes Minkowski norm
     x = norm(V[2:l])
 
     if t > x
-        return t - ( x/t )*( x / ( 1 + √( 1 - (x/t)^2 ) ) )
+        return abs(t - ( x/t )*( x / ( 1 + √( 1 - (x/t)^2 ) ) ))
     elseif x > t
-        return x - ( t/x )*( t / ( 1 + √( 1 - (t/x)^2 ) ) )
+        return abs(x - ( t/x )*( t / ( 1 + √( 1 - (t/x)^2 ) ) ))
     else
         return zero( typeof(V[1]) )
     end
@@ -199,38 +199,6 @@ function MRz( v::RealVec )      # Rotate to z-adapted frame
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-function MRy( v::RealVec )      # Rotate about z-axis to y-adapted frame
-    tpfl=typeof(v[1])
-    l = one(tpfl)
-    o = zero(tpfl)
-	if length(v)==3		        # 3×3 rotation matrix
-		Rv=norm(v[1:2])
-		Sinφ = v[1]/Rv
-        Cosφ = v[2]/Rv
-        if Rv > 0
-		    return [    Cosφ    -Sinφ   o           ;
-                        Sinφ    Cosφ    o           ;
-                        o       o       one(tpfl)   ]
-        else
-            return I(3)
-        end
-    elseif length(v)==4         # 4×4 rotation matrix
-		Rv=norm(v[2:3])
-        if Rv > 0
-            Sinφ = v[2]/Rv
-            Cosφ = v[3]/Rv
-            return [ one(tpfl)  o       o       o           ;
-                        o       Cosφ    -Sinφ   o           ;
-                        o       Sinφ    Cosφ    o           ;
-                        o       o       o       one(tpfl)   ]
-        else
-            return I(4)
-        end
-    else
-        return I(4)
-	end
-end     #---------------------------------------------------------------
-
 function Lrot( X::RealMtx , Λ::RealMtx )  # Spacetime rotation operator
     tpfl = typeof(X[1,1])
 
@@ -271,50 +239,6 @@ function NormflipS( Vsl::RealVec )    # Flip vectors
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-#   Sorting functions
-#-----------------------------------------------------------------------
-
-function ColSort( X::RealMtx , a::Int )  # Switch column a and column 4
-    tpfl = typeof(X[1,1])
-    Y = copy(X)
-    Y[:,a] = X[:,4]
-    Y[:,4] = X[:,a]
-    return Y
-end     #---------------------------------------------------------------
-
-function SameSort( X::RealMtx , a::Int )
-    # If three out of four columns are the same, the fourth column is
-    # moved to the end. 
-    is = sortperm(X[a,:])
-    Xs = X[:,is]
-    if abs(Xs[a,1]-Xs[a,2])>abs(Xs[a,3]-Xs[a,4])
-        return ColSort(Xs,1)
-    else
-        return Xs
-    end
-    return
-end     #---------------------------------------------------------------
-
-#-----------------------------------------------------------------------
-function minnorm( XA::RealMtx , XB::RealMtx , X::RealMtx )
-    # Picks out points with minimum norm
-    tpfl = typeof(XA[1,1])
-    δVA = zeros(tpfl,4)
-    δVB = zeros(tpfl,4)
-    for a=1:4
-        for i=1:4
-            δVA[a] += abs(η(X[:,i]-XA[:,a],X[:,i]-XA[:,a]))
-            δVB[a] += abs(η(X[:,i]-XB[:,a],X[:,i]-XB[:,a]))
-        end
-    end
-    iA = sortperm(δVA)
-    iB = sortperm(δVB)
-    Xa = XA[:,iA][:,1]
-    Xb = XB[:,iB][:,1]
-    return (Xa,Xb)
-end     #---------------------------------------------------------------
-
-#-----------------------------------------------------------------------
 #   Adapted frame intersection point finders
 #-----------------------------------------------------------------------
 
@@ -347,7 +271,7 @@ function IPFinderS( Y::RealMtx )
 end  # End IPfinder
 
 #-----------------------------------------------------------------------
-function IPFinderTs( Y::RealMtx )   
+function IPFinderT( Y::RealMtx )   
     # Finds intersection of light cones in adapted frame
     # Spacelike subconfiguration plane
     tpfl=typeof(Y[1,1])
@@ -359,78 +283,90 @@ function IPFinderTs( Y::RealMtx )
     ( y1 , y2 , y3 ) = ( Y[3,1] , Y[3,2] , Y[3,3] )
     ( t4 , x4 , y4 ) = ( Y[1,4] , Y[2,4] , Y[3,4] )
 
-    #   Circumcenter coordinates:
-    xc = (
-            x3^2*(y1 - y2) + 
-            (x1^2 + (y1 - y2)*(y1 - y3))*(y2 - y3) + 
-            x2^2*(-y1 + y3)
-         )/(2*(x3*(y1 - y2) + x1*(y2 - y3) + x2*(-y1 + y3)))
+    #   Denominator for time coordinate:
+    dT = -(t3*x2*y1) + t4*x2*y1 + t2*x3*y1 - t4*x3*y1 - t2*x4*y1 + 
+        t3*x4*y1 + t3*x1*y2 - t4*x1*y2 - t1*x3*y2 + t4*x3*y2 + 
+        t1*x4*y2 - t3*x4*y2 - t2*x1*y3 + t4*x1*y3 + t1*x2*y3 - 
+        t4*x2*y3 - t1*x4*y3 + t2*x4*y3 + t2*x1*y4 - t3*x1*y4 - 
+        t1*x2*y4 + t3*x2*y4 + t1*x3*y4 - t2*x3*y4
 
-    yc = (
-            -(x2^2*x3) + x1^2*(-x2 + x3) + x3*(y1 - y2)*(y1 + y2) + 
-            x1*(x2^2 - x3^2 + y2^2 - y3^2) + 
-            x2*(x3^2 - y1^2 + y3^2)
-         )/(2*(x3*(y1 - y2) + x1*(y2 - y3) + x2*(-y1 + y3)))
+    #   Denominator for spatial coordinates:
+    dS = t3*x2*y1 - t4*x2*y1 - t2*x3*y1 + t4*x3*y1 + t2*x4*y1 - 
+         t3*x4*y1 - t3*x1*y2 + t4*x1*y2 + t1*x3*y2 - t4*x3*y2 - 
+         t1*x4*y2 + t3*x4*y2 + t2*x1*y3 - t4*x1*y3 - t1*x2*y3 + 
+         t4*x2*y3 + t1*x4*y3 - t2*x4*y3 - t2*x1*y4 + t3*x1*y4 + 
+         t1*x2*y4 - t3*x2*y4 - t1*x3*y4 + t2*x3*y4
     
-    #   Circumcircle radius:
-    r  = ( norm([x1-xc;y1-yc]) + norm([x2-xc;y2-yc]) +
-           norm([x3-xc;y3-yc]) ) / 3
+    #   t coordinate:
+    tc  = ( -(t3^2*x2*y1) + t4^2*x2*y1 + t2^2*x3*y1 - t4^2*x3*y1 - 
+            x2^2*x3*y1 + x2*x3^2*y1 - t2^2*x4*y1 + t3^2*x4*y1 + 
+            x2^2*x4*y1 - x3^2*x4*y1 - x2*x4^2*y1 + x3*x4^2*y1 + 
+            t3^2*x1*y2 - t4^2*x1*y2 - t1^2*x3*y2 + t4^2*x3*y2 + 
+            x1^2*x3*y2 - x1*x3^2*y2 + t1^2*x4*y2 - t3^2*x4*y2 - 
+            x1^2*x4*y2 + x3^2*x4*y2 + x1*x4^2*y2 - x3*x4^2*y2 + 
+            x3*y1^2*y2 - x4*y1^2*y2 - x3*y1*y2^2 + x4*y1*y2^2 - 
+            t2^2*x1*y3 + t4^2*x1*y3 + t1^2*x2*y3 - t4^2*x2*y3 - 
+            x1^2*x2*y3 + x1*x2^2*y3 - t1^2*x4*y3 + t2^2*x4*y3 + 
+            x1^2*x4*y3 - x2^2*x4*y3 - x1*x4^2*y3 + x2*x4^2*y3 - 
+            x2*y1^2*y3 + x4*y1^2*y3 + x1*y2^2*y3 - x4*y2^2*y3 + 
+            x2*y1*y3^2 - x4*y1*y3^2 - x1*y2*y3^2 + x4*y2*y3^2 + 
+            t2^2*x1*y4 - t3^2*x1*y4 - t1^2*x2*y4 + t3^2*x2*y4 + 
+            x1^2*x2*y4 - x1*x2^2*y4 + t1^2*x3*y4 - t2^2*x3*y4 - 
+            x1^2*x3*y4 + x2^2*x3*y4 + x1*x3^2*y4 - x2*x3^2*y4 + 
+            x2*y1^2*y4 - x3*y1^2*y4 - x1*y2^2*y4 + x3*y2^2*y4 + 
+            x1*y3^2*y4 - x2*y3^2*y4 - x2*y1*y4^2 + x3*y1*y4^2 + 
+            x1*y2*y4^2 - x3*y2*y4^2 - x1*y3*y4^2 + x2*y3*y4^2 ) /
+          (2*dT)
     
-    #   Circumcircle radius squared:
-    rs = ( (x1 - xc)^2 + (y1 - yc)^2 + (x2 - xc)^2 + (y2 - yc)^2 +
-           (x3 - xc)^2 + (y3 - yc)^2 ) / 3
+    #   x coordinate:
+    xc = ( -(t2^2*t3*y1) + t2*t3^2*y1 + t2^2*t4*y1 - t3^2*t4*y1 - 
+            t2*t4^2*y1 + t3*t4^2*y1 + t3*x2^2*y1 - t4*x2^2*y1 - 
+            t2*x3^2*y1 + t4*x3^2*y1 + t2*x4^2*y1 - t3*x4^2*y1 + 
+            t1^2*t3*y2 - t1*t3^2*y2 - t1^2*t4*y2 + t3^2*t4*y2 + 
+            t1*t4^2*y2 - t3*t4^2*y2 - t3*x1^2*y2 + t4*x1^2*y2 + 
+            t1*x3^2*y2 - t4*x3^2*y2 - t1*x4^2*y2 + t3*x4^2*y2 - 
+            t3*y1^2*y2 + t4*y1^2*y2 + t3*y1*y2^2 - t4*y1*y2^2 - 
+            t1^2*t2*y3 + t1*t2^2*y3 + t1^2*t4*y3 - t2^2*t4*y3 - 
+            t1*t4^2*y3 + t2*t4^2*y3 + t2*x1^2*y3 - t4*x1^2*y3 - 
+            t1*x2^2*y3 + t4*x2^2*y3 + t1*x4^2*y3 - t2*x4^2*y3 + 
+            t2*y1^2*y3 - t4*y1^2*y3 - t1*y2^2*y3 + t4*y2^2*y3 - 
+            t2*y1*y3^2 + t4*y1*y3^2 + t1*y2*y3^2 - t4*y2*y3^2 + 
+            t1^2*t2*y4 - t1*t2^2*y4 - t1^2*t3*y4 + t2^2*t3*y4 + 
+            t1*t3^2*y4 - t2*t3^2*y4 - t2*x1^2*y4 + t3*x1^2*y4 + 
+            t1*x2^2*y4 - t3*x2^2*y4 - t1*x3^2*y4 + t2*x3^2*y4 - 
+            t2*y1^2*y4 + t3*y1^2*y4 + t1*y2^2*y4 - t3*y2^2*y4 - 
+            t1*y3^2*y4 + t2*y3^2*y4 + t2*y1*y4^2 - t3*y1*y4^2 - 
+            t1*y2*y4^2 + t3*y2*y4^2 + t1*y3*y4^2 - t2*y3*y4^2) /
+          (2*dS)
     
-    #   Time coordinate calculation
-    tc  = (-rs + t1^2 - t4^2 + (x4 - xc)^2 + (y4 - yc)^2)/(2*(t1 - t4))
+    #   y coordinate:
+    yc = (  t2^2*t3*x1 - t2*t3^2*x1 - t2^2*t4*x1 + t3^2*t4*x1 + 
+            t2*t4^2*x1 - t3*t4^2*x1 - t1^2*t3*x2 + t1*t3^2*x2 + 
+            t1^2*t4*x2 - t3^2*t4*x2 - t1*t4^2*x2 + t3*t4^2*x2 + 
+            t3*x1^2*x2 - t4*x1^2*x2 - t3*x1*x2^2 + t4*x1*x2^2 + 
+            t1^2*t2*x3 - t1*t2^2*x3 - t1^2*t4*x3 + t2^2*t4*x3 + 
+            t1*t4^2*x3 - t2*t4^2*x3 - t2*x1^2*x3 + t4*x1^2*x3 + 
+            t1*x2^2*x3 - t4*x2^2*x3 + t2*x1*x3^2 - t4*x1*x3^2 - 
+            t1*x2*x3^2 + t4*x2*x3^2 - t1^2*t2*x4 + t1*t2^2*x4 + 
+            t1^2*t3*x4 - t2^2*t3*x4 - t1*t3^2*x4 + t2*t3^2*x4 + 
+            t2*x1^2*x4 - t3*x1^2*x4 - t1*x2^2*x4 + t3*x2^2*x4 + 
+            t1*x3^2*x4 - t2*x3^2*x4 - t2*x1*x4^2 + t3*x1*x4^2 + 
+            t1*x2*x4^2 - t3*x2*x4^2 - t1*x3*x4^2 + t2*x3*x4^2 + 
+            t3*x2*y1^2 - t4*x2*y1^2 - t2*x3*y1^2 + t4*x3*y1^2 + 
+            t2*x4*y1^2 - t3*x4*y1^2 - t3*x1*y2^2 + t4*x1*y2^2 + 
+            t1*x3*y2^2 - t4*x3*y2^2 - t1*x4*y2^2 + t3*x4*y2^2 + 
+            t2*x1*y3^2 - t4*x1*y3^2 - t1*x2*y3^2 + t4*x2*y3^2 + 
+            t1*x4*y3^2 - t2*x4*y3^2 - t2*x1*y4^2 + t3*x1*y4^2 + 
+            t1*x2*y4^2 - t3*x2*y4^2 - t1*x3*y4^2 + t2*x3*y4^2 ) /
+          (2*dS)
 
     #   Hyperboloid distance calculation
-    R = mnorm( [ tc-t1 ; r ] )
+    R  = (  mnorm( [t1-tc;x1-xc;y1-yc] ) + 
+            mnorm( [t2-tc;x2-xc;y2-yc] ) +
+            mnorm( [t3-tc;x3-xc;y3-yc] ) +
+            mnorm( [t4-tc;x4-xc;y4-yc] ) ) / 4
 
     #   z coordinate
-    Δz = R
-
-    return  (   [ tc ; xc ; yc ; z + Δz ] 
-              , [ tc ; xc ; yc ; z - Δz ] )
-end  # End IPfinder
-
-#-----------------------------------------------------------------------
-function IPFinderTt( Y::RealMtx )   
-    # Finds intersection of light cones in adapted frame
-    # Timelike subconfiguration plane
-    tpfl=typeof(Y[1,1])
-
-    #   Defining variables
-    z  = ( Y[4,1] + Y[4,2] + Y[4,3] + Y[4,4] )/4
-    ( t1 , t2 , t3 ) = ( Y[1,1] , Y[1,2] , Y[1,3] )
-    ( x1 , x2 , x3 ) = ( Y[2,1] , Y[2,2] , Y[2,3] )
-    ( y1 , y2 , y3 ) = ( Y[3,1] , Y[3,2] , Y[3,3] )
-    ( t4 , x4 , y4 ) = ( Y[1,4] , Y[2,4] , Y[3,4] )
-    
-    #   Hyperbola vertex coordinates:
-    tc = (  t1^2*(x2 - x3) + t2^2*(x3 - x1) + 
-            (x1 - x2)*(t3^2 + (x1 - x3)*(x3 - x2)) 
-            )/
-            ( 2*(t3*(x1 - x2) + t1*(x2 - x3) + t2*(x3 - x1)) )
-    
-    xc = (  t1^2*(t2 - t3) + t2^2*t3 + t3*(x1 - x2)*(x1 + x2) - 
-            t2*(t3^2 + x1^2 - x3^2) + t1*(-t2^2 + t3^2 + x2^2 - x3^2)
-            )/
-            ( 2*(t3*(x1 - x2) + t1*(x2 - x3) + t2*(x3 - x1)) )
-    
-    #   Hyperbola distance calculation:
-    ρs = (  (t1 - tc)^2 - (x1 - xc)^2 + (t2 - tc)^2 - (x2 - xc)^2 +
-            (t3 - tc)^2 - (x3 - xc)^2  ) / 3
-    
-    #   Hyperboloid vertex y coordinate
-    yc = -(1/2)*(-(t4 - tc)^2 + (x4 - xc)^2 - y1^2 + y4^2 + ρs
-                )/
-                (y1 - y4)
-    
-    #   Hyperboloid distance calculation:
-    R  = (  mnorm( [t1-tc;x1-xc;y1-yc] ) + mnorm( [t2-tc;x2-xc;y2-yc] ) +
-            mnorm( [t3-tc;x3-xc;y3-yc] ) ) / 3
-    
-    #   z coordinate distance:
     Δz = R
 
     return  (   [ tc ; xc ; yc ; z + Δz ] 
@@ -442,15 +378,13 @@ end  # End IPfinder
 #-----------------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-function slocator( X::RealMtx , erm::Bool=true , q::Real=1e-14 )
+function slocator( X::RealMtx , erm::Bool=true )
     #   Computes location from a single set of four emission points
-    tpfl = typeof(q*X[1,1])
+    tpfl = typeof(X[1,1])
     XF = tpfl.(X)
 
     #   Containers
-        u   = zeros(tpfl,4)
         nv  = zeros(tpfl,4)
-        mv  = zeros(tpfl,4)
         Xc  = zeros(tpfl,4)
 
         XA = zeros(tpfl,4,4)
@@ -460,15 +394,7 @@ function slocator( X::RealMtx , erm::Bool=true , q::Real=1e-14 )
         My  = zeros(tpfl,4,4)
         Λ   = zeros(tpfl,4,4)
 
-    #   Combinations stuff
-        w   = multivec(XF,3,true)[sort(1:4,rev=true)]
-
-    #   Normal vector calculations
-        for a=1:4
-            u  = HodgeV( w[a][1]-XF[:,a] , w[a][2]-XF[:,a] , 
-                         w[a][3]-XF[:,a] )
-            nv    += u*(-1)^(a)
-        end
+        nv = HodgeV(X[:,1] - X[:,4],X[:,2] - X[:,4],X[:,3] - X[:,4])
 
     if η(nv,nv) < 0         # Timelike normal vector n
         #---------------------------------------------------------------
@@ -483,30 +409,9 @@ function slocator( X::RealMtx , erm::Bool=true , q::Real=1e-14 )
         #---------------------------------------------------------------
         Λn  = LTM(NormflipS(nv))
         Mz  = MRz(nv)
-        for a=1:4
-            #   Calculate normal to plane spanned by subset of 3 vectors
-            mv    = HodgeV(nv,w[a][2]-w[a][1],w[a][3]-w[a][1])
-            mv    = mv/mnorm(mv)
-            if η(mv,mv) < 0         # Timelike normal vector m
-                Λ     = LTM(Mz*Λn*mv)*Mz*Λn
-                (XA[:,a],XB[:,a]) = 
-                    IPFinderTs(SameSort(ColSort(Lrot(XF,Λ),a),1))
-            elseif η(mv,mv) > 0     # Spacelike normal vector m
-                Λy    = LTM(NormflipS(Mz*Λn*mv))
-                Λy    = Λy*Mz*Λn
-                My    = MRy(Λy*mv)
-                Λ     = My*Λy
-                (XA[:,a],XB[:,a]) = 
-                    IPFinderTt(ColSort(Lrot(XF,Λ),a))
-            elseif η(mv,mv) == 0    # Null normal vector m
-                if erm
-		            print("mv norm zero.")
-                    (XA[:,a],XB[:,a]) = (Xc,Xc)
-                end
-            end
-        end
-        #   Returns result with smallest Minkowski norm
-        return minnorm( Lrot(XA,inv(Λ)) , Lrot(XB,inv(Λ)) , X )
+        Λ   = Mz*Λn
+        XT  = IPFinderT( Lrot(XF,Λ) )
+        return (inv(Λ)*XT[1],inv(Λ)*XT[2])
     elseif η(nv,nv) == 0     # Null normal vector n
         if erm
 		    print("nv norm zero.")
@@ -516,7 +421,7 @@ function slocator( X::RealMtx , erm::Bool=true , q::Real=1e-14 )
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-function mlocator( X::RealMtx , erm::Bool=true , q::Real=1e-14 )
+function mlocator( X::RealMtx , q::Real=1e-14 , erm::Bool=true )
     #   Calculates location for more than four emission points
     tpfl = typeof(q*X[1,1])
 
@@ -535,7 +440,7 @@ function mlocator( X::RealMtx , erm::Bool=true , q::Real=1e-14 )
         w   = [zeros(tpfl,4) for _ =1:2*k ]
 
         for a=1:k
-            (w[a],w[k+a]) = slocator( W[a] , erm , q )
+            (w[a],w[k+a]) = slocator( W[a] , erm )
         end
 
         #   The following picks out points closely clustered together
@@ -667,11 +572,10 @@ function xgen( xc::Real , r1::Real , r2::Real=r1 , N::Int=4 )
 		else
 			r = r1
 		end
-		ϑ = acos(2*rand(tpfl) - 1)
-		φ = 2*π*rand(tpfl)
-		x = r*sin(ϑ)*cos(φ)
-		y = r*sin(ϑ)*sin(φ)
-		z = r*cos(ϑ)
+		v = vgenerator(tpfl)
+        x = r*v[1]
+		y = r*v[2]
+		z = r*v[3]
 		X[1,i] = - norm(tpfl[(x - xc);y;z])
 		X[2,i] = x
 		X[3,i] = y
@@ -689,7 +593,7 @@ function compdirect( q::Real , P::RealVec , Xc::RealVec )
     # Checks if location points P are recovered
     tpfl=typeof(q)
 
-    δ = norm(P-Xc,1) / norm(P,1)
+    δ = abs( norm(tpfl.(P-Xc),1) / norm(tpfl.(Xc),1) )
 
     if δ < abs(q)
         return ( true  , δ )
@@ -785,7 +689,7 @@ end     #---------------------------------------------------------------
 #-----------------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-function full( iters::Number , q::Real , ctol::Real , erm::Bool=true , 
+function full( iters::Number , q::Real , erm::Bool=true , 
                counter::Bool=true )
     # Main test function--q determines floating point datatype
     tpfl=typeof(q)
@@ -798,7 +702,7 @@ function full( iters::Number , q::Real , ctol::Real , erm::Bool=true ,
             print("\r$i")
         end
         Xp  = pgen(tpfl,4)
-        P   = cereal.slocator(Xp[1],erm,ctol)
+        P   = cereal.slocator(tpfl.(Xp[1]),erm)
         Sda  = compdirect(q,P[1],Xp[2])
         Sdb  = compdirect(q,P[2],Xp[2])
         # Sn   = compnull(q,P[1],P[2],Xp[1],Xp[2])
@@ -818,7 +722,7 @@ function full( iters::Number , q::Real , ctol::Real , erm::Bool=true ,
 end  # End full
 
 #-----------------------------------------------------------------------
-function xtest( iters::Number , q::Real , ctol::Real , erm::Bool=true ,
+function xtest( iters::Number , q::Real , erm::Bool=true , 
                 counter::Bool=true )
     tpfl=typeof(q)
     lb=false
@@ -831,7 +735,7 @@ function xtest( iters::Number , q::Real , ctol::Real , erm::Bool=true ,
         end
 	    xc  = tpfl(50 + rand(tpfl)*50)
 	    X   = xgen(xc,tpfl(10))
-        P   = cereal.slocator(X[1],erm,ctol)
+        P   = cereal.slocator(tpfl.(X[1]),erm)
         Sda = compdirect(q,P[1],X[2])
         Sdb = compdirect(q,P[2],X[2])
         Δ   = Delta( X[1] )
@@ -852,8 +756,8 @@ function xtest( iters::Number , q::Real , ctol::Real , erm::Bool=true ,
 end # End fullTetra0
 
 #-----------------------------------------------------------------------
-function fullmulti( iters::Number , q::Real , ctol::Real , N::Number=5 ,
-                    erm::Bool=true , counter::Bool=true )
+function fullmulti( iters::Number , q::Real ,
+                     N::Number=5 , erm::Bool=true , counter::Bool=true )
     # Main test function--q determines floating point datatype
     tpfl    = typeof(q)
     lb      = false
@@ -865,7 +769,7 @@ function fullmulti( iters::Number , q::Real , ctol::Real , N::Number=5 ,
             print("\r$i")
         end
         Xp  = pgen(tpfl,N)
-        P   = cereal.mlocator(Xp[1],erm,ctol)
+        P   = cereal.mlocator(tpfl.(Xp[1]),q,erm)
         Sd  = compdirect(q,P[1],Xp[2])
         if Sd[1] != true
             print("\n",Xp[1],"\n",Xp[2],"\n",Sd[2],"\n")
