@@ -136,27 +136,30 @@ end     #---------------------------------------------------------------
 function LTM( NVa::RealVec )     
     # Constructs Lorentz transformation matrix
     tpfl=typeof(NVa[1])
-        normv = mnorm(NVa)  # Normalization factor
-        NV    = NVa/normv             # Normalize Vector
-        l     = one(tpfl)           # l has a value of one
-        γ     = NV[1]               # γ is the Lorentz factor
-        if γ<0
-            NV = -NV
-            γ  = -γ
-        end
+    normv = mnorm(NVa)  # Normalization factor
+    NV    = NVa/normv             # Normalize Vector
+    l     = one(tpfl)           # l has a value of one
+    γ     = NV[1]               # γ is the Lorentz factor
+    if γ<0
+        NV = -NV
+        γ  = -γ
+    end
         δ    = (γ - l)             # A useful quantity
         norms = norm(NV[2:4])
-
-        nf = 1/norms    # Normalization factor
+    if γ != l || norms != zero(tpfl) || δ != zero(tpfl)
+        nf = l/norms    # Normalization factor
         β = abs(norms/γ) # β is v/c
 
         vx = nf*NV[2]           # x-component of unit vector
         vy = nf*NV[3]           # y-component of unit vector
         vz = nf*NV[4]           # z-component of unit vector
-    return [  γ        -γ*β*vx       -γ*β*vy       -γ*β*vz      ;
-             -γ*β*vx   l + δ*(vx^2)  δ*vx*vy       δ*vx*vz      ;
-             -γ*β*vy   δ*vy*vx       l + δ*(vy^2)  δ*vy*vz      ;
-             -γ*β*vz   δ*vz*vx       δ*vz*vy       l + δ*(vz^2) ]
+        return [  γ        -γ*β*vx       -γ*β*vy       -γ*β*vz      ;
+                 -γ*β*vx   l + δ*(vx^2)  δ*vx*vy       δ*vx*vz      ;
+                 -γ*β*vy   δ*vy*vx       l + δ*(vy^2)  δ*vy*vz      ;
+                 -γ*β*vz   δ*vz*vx       δ*vz*vy       l + δ*(vz^2) ]
+    else
+        return Matrix(l*I(4))
+    end
 end  # End LTM
 
 #-----------------------------------------------------------------------

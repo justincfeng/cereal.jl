@@ -85,7 +85,7 @@ The default precision is Float64 (double precision), and one typically has 1-3 f
 using DoubleFloats
 n = Int64(1e6)
 q = Double64(1e-18)
-cerealtest.full(n,q)
+ceval.full(n,q)
 ```
 
 With the increased precision, the cereal code passes this test with a much lower threshold of ```1e-18```.
@@ -114,7 +114,7 @@ using DoubleFloats
 N = 5
 n = Int64(1e6)
 q = Double64(1e-20)
-cerealtest.fullmulti(n,q,N)
+ceval.fullmulti(n,q,N)
 ```
 
 ## Literature
