@@ -1,5 +1,5 @@
 # cereal.jl
-This is a simple, Special Relativistic Location (SRL/cereal) tool for use in relativistic positioning systems. It computes the intersection of future pointing light cones from four distinct emission points which lie on a spacelike or timelike hyperplane.
+This is a simple, Special Relativistic Location (SRL/cereal) tool for use in relativistic positioning systems. It computes the intersection of future pointing light cones from at least four distinct emission points which lie on a spacelike or timelike hyperplane.
 
 ## Algorithm
 
@@ -15,7 +15,7 @@ The computed point *P* should satisfy the four constraints *dX<sub>i</sub>*<sup>
 
 The case of a timelike hyperplane is conceptually similar, but more intricate:
 
-  1. Find and perform a Lorentz transformation such that the four points *X<sub>i</sub>* (labeled with *i* ∈ {1,2,3,4}) lie on a plane *P<sub>z</sub>* specified by a *z* coordinate in the transformed frame. In the transformed frame, the four points lie on an elliptic hyprboloid.
+  1. Find and perform a Lorentz transformation such that the four points *X<sub>i</sub>* (labeled with *i* ∈ {1,2,3,4}) lie on a plane *P<sub>z</sub>* specified by a *z* coordinate in the transformed frame. In the transformed frame, the four points lie on an elliptic hyperboloid.
 
   2. Find the vertex of the hyperboloid, and the Minkowski distance *R* from the vertex to a point on the hyperboloid. There are two intersection points. The *z* coordinate for the intersection points is a distance *R* in the direction normal to the *P<sub>z</sub>* plane.
 
@@ -119,4 +119,4 @@ ceval.fullmulti(n,q,N)
 
 ## Literature
 
-To our knowledge, the particular algorithms implemented in this code do not yet appear in the literature, though they are a straightforward consequence of the existence of a spacelike or timelike configuration hyperplane discussed in Coll et al., Class.Quant.Grav. 27 (2010) 065013 (see also Fig. 3 of Coll et al., Phys. Rev. D 86, 084036 (2012)). The algorithm implemented here is chosen for its conceptual simplicity, and for its relative efficiency. It should be mentioned that the formula described in Coll et al., Class.Quant.Grav. 27 (2010) 065013 has been implemented in a code described in Puchades et al., Astrophys.Space Sci. 341 (2012) 631-643. Another algorithm which accomplishes the same is described in Kostić et al., Class. Quantum Grav. 32 (2015) 215004 and Čadež et al., Advanced Concepts Team, ARIADNA final report (09/1301), European Space Agency, 2010. Further details will be provided in an upcoming paper.
+To our knowledge, the particular algorithms implemented in this code do not yet appear in the literature, though they are a straightforward consequence of the existence of a spacelike or timelike configuration hyperplane discussed in Coll et al., Class.Quant.Grav. 27 (2010) 065013 (see also Fig. 3 of Coll et al., Phys. Rev. D 86, 084036 (2012)). The algorithm implemented here is chosen for its conceptual simplicity, and for its relative efficiency. It should be mentioned that the formula described in Coll et al., Class.Quant.Grav. 27 (2010) 065013 has been implemented in a code described in Puchades et al., Astrophys.Space Sci. 341 (2012) 631-643 (we also include in this repository an implementation in the file srl.jl, which is structured similarly to cereal.jl). Another algorithm which accomplishes the same is described in Kostić et al., Class. Quantum Grav. 32 (2015) 215004 and Čadež et al., Advanced Concepts Team, ARIADNA final report (09/1301), European Space Agency, 2010. Further details will be provided in an upcoming paper.
