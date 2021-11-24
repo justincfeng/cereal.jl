@@ -27,7 +27,7 @@ There are two intersection points in the case of a timelike hyperplane; this is 
 
 ### Four emission points
 
-To try out the code, open the Julia REPL in the directory containing ```cereal.jl``` , and run:
+To try out the code, open the Julia REPL in the ```src``` directory containing ```cereal.jl``` , and run:
 
 ```julia
 include("cereal.jl")

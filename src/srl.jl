@@ -1,5 +1,11 @@
 #-----------------------------------------------------------------------
-module cereal      # cereal module
+#   This code implements the relativistic location formula presented
+#   in Coll et al., Class.Quant.Grav. 27 (2010) 065013 and
+#   Coll et al., Phys. Rev. D 86, 084036 (2012).
+#-----------------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+module srl      # srl module
 #-----------------------------------------------------------------------
 
 using LinearAlgebra
@@ -10,7 +16,7 @@ const RealVec{T<:Real} = Array{T,1}      # Defining vector datatype
 const RealMtx{T<:Real} = Array{T,2}      # Defining matrix datatype
 
 #-----------------------------------------------------------------------
-#   Minkowski product and norm
+#   Minkowski product, norm, and matrix
 #-----------------------------------------------------------------------
 
 #-----------------------------------------------------------------------
@@ -47,6 +53,16 @@ function mnorm( V )  # Computes Minkowski norm
 end  # End mnorm
 
 #-----------------------------------------------------------------------
+function ημν( tpfl::DataType=Float64 , dim::Int=4 )
+    # Constructs Minkowski metric
+    gη = Matrix(one(tpfl)*(I(dim)))
+
+    gη[1,1] = -gη[1,1]
+
+    return gη
+end  # End ημν
+
+#-----------------------------------------------------------------------
 #   Levi-Civita and Hodge
 #-----------------------------------------------------------------------
 
@@ -64,6 +80,64 @@ function ϵ( a , b , c , d )  # Levi-Civita
     else
         return 0
     end
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function Hodge2( U::RealVec , V::RealVec )
+    tpfl=typeof(U[1]) 
+
+    W = zeros(tpfl,4,4)
+    for i=1:4
+    for j=1:4
+        Z  = zero(tpfl)
+        for k=1:4
+        for l=1:4
+            Z += -ϵ(i,j,k,l)*U[k]*V[l]
+        end
+        end
+        W[i,j] = Z
+    end
+    end
+
+    return W
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function Hodge3( U::RealVec , V::RealVec , W::RealVec )
+    tpfl=typeof(U[1]) 
+
+    VL = zeros(tpfl,4)
+    for i=1:4
+    Z  = zero(tpfl)
+    for j=1:4
+    for k=1:4
+    for l=1:4
+        Z += -ϵ(i,j,k,l)*U[j]*V[k]*W[l]
+    end
+    end
+    end
+    VL[i] = Z
+    end
+
+    return VL
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function Hodge4( U::RealVec , V::RealVec , W::RealVec , Z::RealVec )
+    tpfl=typeof(U[1]) 
+
+    H = zero(tpfl)
+    for i=1:4
+    for j=1:4
+    for k=1:4
+    for l=1:4
+        H += -ϵ(i,j,k,l)*U[i]*V[j]*W[k]*Z[l]
+    end
+    end
+    end
+    end
+
+    return H
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
@@ -94,42 +168,7 @@ function multivec( X::RealMtx , k::Int , vecvec::Bool )
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-function HodgeV( U::RealVec , V::RealVec , W::RealVec )
-    # Hodge of three vectors
-    tpfl=typeof(U[1]) 
-
-    v = zeros(tpfl,4)
-    for i=1:4, j=1:4, k=1:4, l=1:4
-        v[i] += ϵ(i,j,k,l)*U[j]*V[k]*W[l]
-    end
-
-    v[1] = -v[1]    # Raise index
-
-    return v
-end     #---------------------------------------------------------------
-
-#-----------------------------------------------------------------------
-function Hodge2( U::RealVec , V::RealVec )
-    tpfl=typeof(U[1]) 
-
-    W = zeros(tpfl,4,4)
-    for i=1:4
-    for j=1:4
-        Z  = zero(tpfl)
-        for k=1:4
-        for l=1:4
-            Z += -cereal.ϵ(i,j,k,l)*U[k]*V[l]
-        end
-        end
-        W[i,j] = Z
-    end
-    end
-
-    return W
-end     #---------------------------------------------------------------
-
-#-----------------------------------------------------------------------
-#   Transformation functions
+#   Transformation and Frame functions
 #-----------------------------------------------------------------------
 
 #-----------------------------------------------------------------------
@@ -163,267 +202,159 @@ function LTM( NVa::RealVec )
 end  # End LTM
 
 #-----------------------------------------------------------------------
-function MRz( v::RealVec )      # Rotate to z-adapted frame
-    tpfl=typeof(v[1])
-    l = one(tpfl)
-    o = zero(tpfl)
-	if length(v)==3             # 3×3 rotation matrix
-		rv=norm(v[1:3])
-		Rv=norm(v[1:2])
-        if Rv > 0 && rv > 0
-		    Cosϑ=v[3]/rv
-		    Sinϑ=Rv/rv
-		    Cosφ=v[1]/Rv
-		    Sinφ=v[2]/Rv
-		    return [ Cosϑ*Cosφ  Cosϑ*Sinφ   -Sinϑ   ;
-                     -Sinφ      Cosφ        o       ;
-                     Sinϑ*Cosφ  Sinϑ*Sinφ   Cosϑ    ]
-        else
-            return I(3)        
-        end
-    elseif length(v)==4         # 4×4 rotation matrix
-        rv=norm(v[2:4])
-		Rv=norm(v[2:3])
-        if Rv > 0 && rv > 0
-            Cosϑ=v[4]/rv
-            Sinϑ=Rv/rv
-		    Cosφ=v[2]/Rv
-		    Sinφ=v[3]/Rv
-            return [ one(tpfl)  o           o           o       ;
-                        o       Cosϑ*Cosφ   Cosϑ*Sinφ   -Sinϑ   ;
-                        o       -Sinφ       Cosφ        o       ;
-                        o       Sinϑ*Cosφ   Sinϑ*Sinφ   Cosϑ    ]
-        else
-            return I(4)
-        end
-    else
-        return I(4)
-	end
+function Frame( X::RealMtx , erm::Bool=true )
+    # Constructs spatial frame
+    tpfl=typeof(X[1,1])       # Extracting floating point datatype
+    s = 1       # Integer for constructing frame
+    b = true    # Boolean variable - stops routine if not spacelike
+
+    E = zeros(tpfl,4,3)
+
+    for i=1:3
+        E[:,i] = X[:,i] - X[:,4]
+    end
+
+    return E
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-function Lrot( X::RealMtx , Λ::RealMtx )  # Spacetime rotation operator
-    tpfl = typeof(X[1,1])
+#   Configuration and auxiliary vectors
+#-----------------------------------------------------------------------
 
-    Xprime = zeros(tpfl,4,4)
+#-----------------------------------------------------------------------
+function ConfVec( E::RealMtx )
+    # Constructs configuration vector
+    tpfl=typeof(E[1,1])
+
+    NVL = Hodge3( E[:,1] , E[:,2] , E[:,3] )
+
+    return ημν( tpfl , 4 )*NVL
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function TrVec( E::RealMtx , thresh=1e-13 )
+    tpfl=typeof(E[1,1])
+    χ = ConfVec( E )
+
+    ξ = ones(tpfl,4)
+
+    if χ[1] != 0.0
+        ξ[1] = ( 1.0 - (χ[2]*ξ[2] + χ[3]*ξ[3] + χ[4]*ξ[4]) ) / χ[1]
+    else
+        ξ = ξ/(χ[2]*ξ[2] + χ[3]*ξ[3] + χ[4]*ξ[4])
+    end
+
+    return ξ
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+function ystar( E::RealMtx )
+    # Constructs timelike normal to frame
+    tpfl=typeof(E[1,1])
+
+    χ = ConfVec( E )
+
+    ξ = ones(tpfl,4)
+
+    if χ[1] != 0.0
+        ξ[1] = ( 1.0 - (χ[2]*ξ[2] + χ[3]*ξ[3] + χ[4]*ξ[4]) ) / χ[1]
+    else
+        ξ = ξ/(χ[2]*ξ[2] + χ[3]*ξ[3] + χ[4]*ξ[4])
+    end
+
+    h23 = Hodge2( E[:,2] , E[:,3] )
+    h31 = Hodge2( E[:,3] , E[:,1] )
+    h12 = Hodge2( E[:,1] , E[:,2] )
+
+    Ω1 = η(E[:,1],E[:,1])/2
+    Ω2 = η(E[:,2],E[:,2])/2
+    Ω3 = η(E[:,3],E[:,3])/2
+
+    H  = Ω1*h23 + Ω2*h31 + Ω3*h12
+
+    ys = zeros(tpfl,4)
 
     for i=1:4
-        Xprime[:,i] = Λ*X[:,i]
+    Z  = zero(tpfl)
+    for j=1:4
+        Z += ξ[j]*H[j,i]
+    end
+    ys[i] = Z
     end
 
-    return Xprime
+    ys = ys / η(ξ,χ)
+
+    return ημν( tpfl , 4 )*ys
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-function NormflipS( Vsl::RealVec )    # Flip vectors
-    tpfl = typeof(Vsl[1])
+function Delta( X::RealMtx )
+    tpfl=typeof(X[1,1])
 
-    normVsl = mnorm(Vsl)
-    normsq = η(Vsl,Vsl)
+    E = zeros(tpfl,4,3)
 
-    if Vsl[1] < 0
-        Vsl = -Vsl
+    for i=1:3
+        E[:,i] = X[:,i] - X[:,4]
     end
 
-    norms = norm(Vsl[2:4])
+    χ = Hodge3(E[:,1],E[:,2],E[:,3])
 
-    if normsq > 0
-        NVsl = Vsl/normVsl
-        nlt  = NVsl[1]
-        nls  = norm(NVsl[2:4])
-        nvsl = Vsl[2:4]/norms
-        NVs  = zeros(tpfl,4)
-        NVs[1]   = nls
-        NVs[2:4] = nlt * nvsl
-        return NVs
+    χ[1] = -χ[1]
+
+    ξ = ones(tpfl,4)
+
+    if χ[1] != 0.0
+        ξ[1] = ( 1.0 - (χ[2]*ξ[2] + χ[3]*ξ[3] + χ[4]*ξ[4]) ) / χ[1]
     else
-        return Vsl/normVsl
+        ξ = ξ/(χ[2]*ξ[2] + χ[3]*ξ[3] + χ[4]*ξ[4])
     end
+
+    h23 = Hodge2( E[:,2] , E[:,3] )
+    h31 = Hodge2( E[:,3] , E[:,1] )
+    h12 = Hodge2( E[:,1] , E[:,2] )
+
+    Ω1 = η(E[:,1],E[:,1])/2
+    Ω2 = η(E[:,2],E[:,2])/2
+    Ω3 = η(E[:,3],E[:,3])/2
+
+    H  = Ω1*h23 + Ω2*h31 + Ω3*h12
+
+    ys = zeros(tpfl,4)
+
+    for i=1:4
+    Z  = zero(tpfl)
+    for j=1:4
+        Z += ξ[j]*H[j,i]
+    end
+    ys[i] = Z
+    end
+
+    ys = ys / η(ξ,χ)
+
+    ys[1] = -ys[1]
+
+    Δ = η(ys,χ)^2 - η(ys,ys)*η(χ,χ)
+
+    return (Δ,η(ys,χ),η(χ,χ),η(ys,ys))
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-#   Adapted frame intersection point finders
-#-----------------------------------------------------------------------
+function slocator( X::RealMtx , erm::Bool=false )
+    tpfl=typeof(X[1,1])
 
-#-----------------------------------------------------------------------
-function IPFinderS( Y::RealMtx )   
-    # Finds intersection of light cones in adapted frame
-    tpfl=typeof(Y[1,1])
+    E   = Frame( X )
+    χ   = ConfVec( E )
+    ys  = ystar( E )
 
-    x = zeros(tpfl,3,4)     # Create containers
-    v = zeros(tpfl,3,3)
+    φ1 = η(ys,ys) / (η(ys,χ) + sqrt( abs(η(ys,χ)^2 - η(ys,ys)*η(χ,χ)) ))
+    φ2 = η(ys,ys) / (η(ys,χ) - sqrt( abs(η(ys,χ)^2 - η(ys,ys)*η(χ,χ)) ))
 
-    x[1,:] = Y[2,:]         # Spatial points for corners of tetrahedron
-    x[2,:] = Y[3,:]
-    x[3,:] = Y[4,:]
+    x1 = X[:,4] + ys - φ1*χ
+    x2 = X[:,4] + ys - φ2*χ
 
-    v[:,1] = x[:,2] - x[:,1]    # "Frame" vectors centered on x[:,1]
-    v[:,2] = x[:,3] - x[:,1]
-    v[:,3] = x[:,4] - x[:,1]
-    
-    B = [ x[:,2]⋅x[:,2] - x[:,1]⋅x[:,1] ; x[:,3]⋅x[:,3] - x[:,1]⋅x[:,1];
-          x[:,4]⋅x[:,4] - x[:,1]⋅x[:,1] ] / 2    # Constructing B vector
-
-    A = transpose([ v[:,1]  v[:,2]  v[:,3] ])    # Constructing A matrix
-
-    xc = inv(A)*B           # Compute circumcenter
-    rc = (norm(xc-x[:,1]) + norm(xc-x[:,2]) + # Distance to circumcenter
-          norm(xc-x[:,3]) + norm(xc-x[:,4])) / 4
-    tc = rc + Y[1,1]        # Compute time coordinate
-    return [ tc ; xc[1] ; xc[2] ; xc[3] ]
-end  # End IPfinder
-
-#-----------------------------------------------------------------------
-function IPFinderT( Y::RealMtx )   
-    # Finds intersection of light cones in adapted frame
-    # Spacelike subconfiguration plane
-    tpfl=typeof(Y[1,1])
-
-    #   Defining variables
-    z  = ( Y[4,1] + Y[4,2] + Y[4,3] + Y[4,4] )/4
-    ( t1 , t2 , t3 ) = ( Y[1,1] , Y[1,2] , Y[1,3] )
-    ( x1 , x2 , x3 ) = ( Y[2,1] , Y[2,2] , Y[2,3] )
-    ( y1 , y2 , y3 ) = ( Y[3,1] , Y[3,2] , Y[3,3] )
-    ( t4 , x4 , y4 ) = ( Y[1,4] , Y[2,4] , Y[3,4] )
-
-    #   Denominator for time coordinate:
-    dT = -(t3*x2*y1) + t4*x2*y1 + t2*x3*y1 - t4*x3*y1 - t2*x4*y1 + 
-        t3*x4*y1 + t3*x1*y2 - t4*x1*y2 - t1*x3*y2 + t4*x3*y2 + 
-        t1*x4*y2 - t3*x4*y2 - t2*x1*y3 + t4*x1*y3 + t1*x2*y3 - 
-        t4*x2*y3 - t1*x4*y3 + t2*x4*y3 + t2*x1*y4 - t3*x1*y4 - 
-        t1*x2*y4 + t3*x2*y4 + t1*x3*y4 - t2*x3*y4
-
-    #   Denominator for spatial coordinates:
-    dS = t3*x2*y1 - t4*x2*y1 - t2*x3*y1 + t4*x3*y1 + t2*x4*y1 - 
-         t3*x4*y1 - t3*x1*y2 + t4*x1*y2 + t1*x3*y2 - t4*x3*y2 - 
-         t1*x4*y2 + t3*x4*y2 + t2*x1*y3 - t4*x1*y3 - t1*x2*y3 + 
-         t4*x2*y3 + t1*x4*y3 - t2*x4*y3 - t2*x1*y4 + t3*x1*y4 + 
-         t1*x2*y4 - t3*x2*y4 - t1*x3*y4 + t2*x3*y4
-    
-    #   t coordinate:
-    tc  = ( -(t3^2*x2*y1) + t4^2*x2*y1 + t2^2*x3*y1 - t4^2*x3*y1 - 
-            x2^2*x3*y1 + x2*x3^2*y1 - t2^2*x4*y1 + t3^2*x4*y1 + 
-            x2^2*x4*y1 - x3^2*x4*y1 - x2*x4^2*y1 + x3*x4^2*y1 + 
-            t3^2*x1*y2 - t4^2*x1*y2 - t1^2*x3*y2 + t4^2*x3*y2 + 
-            x1^2*x3*y2 - x1*x3^2*y2 + t1^2*x4*y2 - t3^2*x4*y2 - 
-            x1^2*x4*y2 + x3^2*x4*y2 + x1*x4^2*y2 - x3*x4^2*y2 + 
-            x3*y1^2*y2 - x4*y1^2*y2 - x3*y1*y2^2 + x4*y1*y2^2 - 
-            t2^2*x1*y3 + t4^2*x1*y3 + t1^2*x2*y3 - t4^2*x2*y3 - 
-            x1^2*x2*y3 + x1*x2^2*y3 - t1^2*x4*y3 + t2^2*x4*y3 + 
-            x1^2*x4*y3 - x2^2*x4*y3 - x1*x4^2*y3 + x2*x4^2*y3 - 
-            x2*y1^2*y3 + x4*y1^2*y3 + x1*y2^2*y3 - x4*y2^2*y3 + 
-            x2*y1*y3^2 - x4*y1*y3^2 - x1*y2*y3^2 + x4*y2*y3^2 + 
-            t2^2*x1*y4 - t3^2*x1*y4 - t1^2*x2*y4 + t3^2*x2*y4 + 
-            x1^2*x2*y4 - x1*x2^2*y4 + t1^2*x3*y4 - t2^2*x3*y4 - 
-            x1^2*x3*y4 + x2^2*x3*y4 + x1*x3^2*y4 - x2*x3^2*y4 + 
-            x2*y1^2*y4 - x3*y1^2*y4 - x1*y2^2*y4 + x3*y2^2*y4 + 
-            x1*y3^2*y4 - x2*y3^2*y4 - x2*y1*y4^2 + x3*y1*y4^2 + 
-            x1*y2*y4^2 - x3*y2*y4^2 - x1*y3*y4^2 + x2*y3*y4^2 ) /
-          (2*dT)
-    
-    #   x coordinate:
-    xc = ( -(t2^2*t3*y1) + t2*t3^2*y1 + t2^2*t4*y1 - t3^2*t4*y1 - 
-            t2*t4^2*y1 + t3*t4^2*y1 + t3*x2^2*y1 - t4*x2^2*y1 - 
-            t2*x3^2*y1 + t4*x3^2*y1 + t2*x4^2*y1 - t3*x4^2*y1 + 
-            t1^2*t3*y2 - t1*t3^2*y2 - t1^2*t4*y2 + t3^2*t4*y2 + 
-            t1*t4^2*y2 - t3*t4^2*y2 - t3*x1^2*y2 + t4*x1^2*y2 + 
-            t1*x3^2*y2 - t4*x3^2*y2 - t1*x4^2*y2 + t3*x4^2*y2 - 
-            t3*y1^2*y2 + t4*y1^2*y2 + t3*y1*y2^2 - t4*y1*y2^2 - 
-            t1^2*t2*y3 + t1*t2^2*y3 + t1^2*t4*y3 - t2^2*t4*y3 - 
-            t1*t4^2*y3 + t2*t4^2*y3 + t2*x1^2*y3 - t4*x1^2*y3 - 
-            t1*x2^2*y3 + t4*x2^2*y3 + t1*x4^2*y3 - t2*x4^2*y3 + 
-            t2*y1^2*y3 - t4*y1^2*y3 - t1*y2^2*y3 + t4*y2^2*y3 - 
-            t2*y1*y3^2 + t4*y1*y3^2 + t1*y2*y3^2 - t4*y2*y3^2 + 
-            t1^2*t2*y4 - t1*t2^2*y4 - t1^2*t3*y4 + t2^2*t3*y4 + 
-            t1*t3^2*y4 - t2*t3^2*y4 - t2*x1^2*y4 + t3*x1^2*y4 + 
-            t1*x2^2*y4 - t3*x2^2*y4 - t1*x3^2*y4 + t2*x3^2*y4 - 
-            t2*y1^2*y4 + t3*y1^2*y4 + t1*y2^2*y4 - t3*y2^2*y4 - 
-            t1*y3^2*y4 + t2*y3^2*y4 + t2*y1*y4^2 - t3*y1*y4^2 - 
-            t1*y2*y4^2 + t3*y2*y4^2 + t1*y3*y4^2 - t2*y3*y4^2) /
-          (2*dS)
-    
-    #   y coordinate:
-    yc = (  t2^2*t3*x1 - t2*t3^2*x1 - t2^2*t4*x1 + t3^2*t4*x1 + 
-            t2*t4^2*x1 - t3*t4^2*x1 - t1^2*t3*x2 + t1*t3^2*x2 + 
-            t1^2*t4*x2 - t3^2*t4*x2 - t1*t4^2*x2 + t3*t4^2*x2 + 
-            t3*x1^2*x2 - t4*x1^2*x2 - t3*x1*x2^2 + t4*x1*x2^2 + 
-            t1^2*t2*x3 - t1*t2^2*x3 - t1^2*t4*x3 + t2^2*t4*x3 + 
-            t1*t4^2*x3 - t2*t4^2*x3 - t2*x1^2*x3 + t4*x1^2*x3 + 
-            t1*x2^2*x3 - t4*x2^2*x3 + t2*x1*x3^2 - t4*x1*x3^2 - 
-            t1*x2*x3^2 + t4*x2*x3^2 - t1^2*t2*x4 + t1*t2^2*x4 + 
-            t1^2*t3*x4 - t2^2*t3*x4 - t1*t3^2*x4 + t2*t3^2*x4 + 
-            t2*x1^2*x4 - t3*x1^2*x4 - t1*x2^2*x4 + t3*x2^2*x4 + 
-            t1*x3^2*x4 - t2*x3^2*x4 - t2*x1*x4^2 + t3*x1*x4^2 + 
-            t1*x2*x4^2 - t3*x2*x4^2 - t1*x3*x4^2 + t2*x3*x4^2 + 
-            t3*x2*y1^2 - t4*x2*y1^2 - t2*x3*y1^2 + t4*x3*y1^2 + 
-            t2*x4*y1^2 - t3*x4*y1^2 - t3*x1*y2^2 + t4*x1*y2^2 + 
-            t1*x3*y2^2 - t4*x3*y2^2 - t1*x4*y2^2 + t3*x4*y2^2 + 
-            t2*x1*y3^2 - t4*x1*y3^2 - t1*x2*y3^2 + t4*x2*y3^2 + 
-            t1*x4*y3^2 - t2*x4*y3^2 - t2*x1*y4^2 + t3*x1*y4^2 + 
-            t1*x2*y4^2 - t3*x2*y4^2 - t1*x3*y4^2 + t2*x3*y4^2 ) /
-          (2*dS)
-
-    #   Hyperboloid distance calculation
-    R  = (  mnorm( [t1-tc;x1-xc;y1-yc] ) + 
-            mnorm( [t2-tc;x2-xc;y2-yc] ) +
-            mnorm( [t3-tc;x3-xc;y3-yc] ) +
-            mnorm( [t4-tc;x4-xc;y4-yc] ) ) / 4
-
-    #   z coordinate
-    Δz = R
-
-    return  (   [ tc ; xc ; yc ; z + Δz ] 
-              , [ tc ; xc ; yc ; z - Δz ] )
-end  # End IPfinder
-
-#-----------------------------------------------------------------------
-#   Locator functions
-#-----------------------------------------------------------------------
-
-#-----------------------------------------------------------------------
-function slocator( X::RealMtx , erm::Bool=true )
-    #   Computes location from a single set of four emission points
-    tpfl = typeof(X[1,1])
-    XF = tpfl.(X)
-
-    #   Containers
-        nv  = zeros(tpfl,4)
-        Xc  = zeros(tpfl,4)
-
-        XA = zeros(tpfl,4,4)
-        XB = zeros(tpfl,4,4)
-
-        Mz  = zeros(tpfl,4,4)
-        My  = zeros(tpfl,4,4)
-        Λ   = zeros(tpfl,4,4)
-
-        nv = HodgeV(X[:,1] - X[:,4],X[:,2] - X[:,4],X[:,3] - X[:,4])
-
-    if η(nv,nv) < 0         # Timelike normal vector n
-        #---------------------------------------------------------------
-        #   Computation for spacelike configuration plane
-        #---------------------------------------------------------------
-        Λ  = LTM(nv)
-        Xc = inv(Λ)*IPFinderS( Lrot(XF,Λ) )
-        return (Xc,Xc)
-    elseif η(nv,nv) > 0     # Spacelike normal vector n
-        #---------------------------------------------------------------
-        #   Computation for timelike configuration plane
-        #---------------------------------------------------------------
-        Λn  = LTM(NormflipS(nv))
-        Mz  = MRz(nv)
-        Λ   = Mz*Λn
-        XT  = IPFinderT( Lrot(XF,Λ) )
-        return (inv(Λ)*XT[1],inv(Λ)*XT[2])
-    elseif η(nv,nv) == 0     # Null normal vector n
-        if erm
-		    print("nv norm zero.")
-        end
-        return (Xc,Xc)
-    end
+    return (x1,x2)
 end     #---------------------------------------------------------------
 
-#-----------------------------------------------------------------------
 function mlocator( X::RealMtx , q::Real=1e-14 , erm::Bool=true )
     #   Calculates location for more than four emission points
     tpfl = typeof(q*X[1,1])
@@ -502,15 +433,15 @@ function mlocator( X::RealMtx , q::Real=1e-14 , erm::Bool=true )
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-end     # End scope of module cereal
+end     # End scope of module srl
 #-----------------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-module ceval    # Evaluation module for cereal
+module seval    # Evaluation module for srl
 #-----------------------------------------------------------------------
 
 using LinearAlgebra
-import ..cereal         # Importing functions from cereal
+import ..srl         # Importing functions from srl
 
 const RealVec{T<:Real} = Array{T,1}      # Defining vector datatype
 const RealMtx{T<:Real} = Array{T,2}      # Defining matrix datatype
@@ -620,7 +551,7 @@ end  # End compdirect
 
 #-----------------------------------------------------------------------
 function nrat( V::RealVec )        # Norm ratio
-    return abs(cereal.η(V,V)/dot(V,V))
+    return abs(srl.η(V,V)/dot(V,V))
 end  # End nrat
 
 #-----------------------------------------------------------------------
@@ -639,67 +570,17 @@ function compnull( q::Real , P1::RealVec , P2::RealVec , X::RealMtx ,
     A1  = ( VT1[1] + VT1[2] + VT1[3] + VT1[4] ) / 4
     A2  = ( VT2[1] + VT2[2] + VT2[3] + VT2[4] ) / 4
 
-    Δ   = cereal.Delta(X)
+    Δ   = srl.Delta(X)
     χ   = Δ[2]
 
     if A1 < q && A2 < q
         return ( true  , X , A1 , A2 , Xc , P1 , P2 , Δ[1] ,
-                cereal.η(χ,χ) )
+                srl.η(χ,χ) )
     else
         return ( false , X , A1 , A2 , Xc , P1 , P2 , Δ[1] ,
-                cereal.η(χ,χ) )
+                srl.η(χ,χ) )
     end
 end  # End compnull
-
-#-----------------------------------------------------------------------
-function Delta( X::RealMtx )
-    tpfl=typeof(X[1,1])
-    E = zeros(tpfl,4,3)
-    for i=1:3
-        E[:,i] = X[:,i] - X[:,4]
-    end
-
-    χ = cereal.HodgeV(E[:,1],E[:,2],E[:,3])
-
-    ξ = ones(tpfl,4)
-
-    if χ[1] != 0.0
-        ξ[1] = ( 1.0 - (χ[2]*ξ[2] + χ[3]*ξ[3] + χ[4]*ξ[4]) ) / χ[1]
-    else
-        ξ = ξ/(χ[2]*ξ[2] + χ[3]*ξ[3] + χ[4]*ξ[4])
-    end
-
-    h23 = cereal.Hodge2( E[:,2] , E[:,3] )
-    h31 = cereal.Hodge2( E[:,3] , E[:,1] )
-    h12 = cereal.Hodge2( E[:,1] , E[:,2] )
-
-    Ω1 = cereal.η(E[:,1],E[:,1])/2
-    Ω2 = cereal.η(E[:,2],E[:,2])/2
-    Ω3 = cereal.η(E[:,3],E[:,3])/2
-
-    H  = Ω1*h23 + Ω2*h31 + Ω3*h12
-
-    ys = zeros(tpfl,4)
-
-    for i=1:4
-    Z  = zero(tpfl)
-    for j=1:4
-        Z += ξ[j]*H[j,i]
-    end
-    ys[i] = Z
-    end
-
-    ys = ys / cereal.η(ξ,χ)
-
-    ys[1] = -ys[1]
-
-    Δ = cereal.η(ys,χ)^2 - cereal.η(ys,ys)*cereal.η(χ,χ)
-
-    den = abs(cereal.η(ys,ys))
-
-    return (Δ/den,abs(cereal.η(ys,χ))/den,cereal.η(χ,χ)/den,
-            cereal.η(χ,χ)*den/(abs(cereal.η(ys,χ))^2))
-end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
 #   Test functions
@@ -719,7 +600,7 @@ function full( iters::Number , q::Real , erm::Bool=true ,
             print("\r$i")
         end
         Xp   = pgen(tpfl,4)
-        P    = cereal.slocator(tpfl.(Xp[1]),erm)
+        P    = srl.slocator(tpfl.(Xp[1]),erm)
         Sda  = compdirect(q,P[1],Xp[2])
         Sdb  = compdirect(q,P[2],Xp[2])
         Δ    = Delta( tpfl.(Xp[1]) )
@@ -754,7 +635,7 @@ function xtest( iters::Number , q::Real , erm::Bool=true ,
         end
 	    xc  = tpfl(2 + rand(tpfl))
 	    X   = xgen(xc,tpfl(1))
-        P   = cereal.slocator(tpfl.(X[1]),erm)
+        P   = srl.slocator(tpfl.(X[1]),erm)
         Sda = compdirect(q,P[1],X[2])
         Sdb = compdirect(q,P[2],X[2])
         Δ   = Delta( X[1] )
@@ -789,7 +670,7 @@ function fullmulti( iters::Number , q::Real ,
             print("\r$i")
         end
         Xp  = pgen(tpfl,N)
-        P   = cereal.mlocator(tpfl.(Xp[1]),q,erm)
+        P   = srl.mlocator(tpfl.(Xp[1]),q,erm)
         Sd  = compdirect(q,P[1],Xp[2])
         if Sd[1] != true
             print("\n",Xp[1],"\n",Xp[2],"\n",Sd[2],"\n")
@@ -807,5 +688,5 @@ function fullmulti( iters::Number , q::Real ,
 end  # End fullmulti
 
 #-----------------------------------------------------------------------
-end     # End scope of module ceval
+end     # End scope of module seval
 #-----------------------------------------------------------------------
