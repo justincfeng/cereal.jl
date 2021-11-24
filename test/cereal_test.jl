@@ -224,7 +224,6 @@ Sdb = ceval.compdirect(q,P[2],Xp[2])
 
 @test Sda[1] == true || Sdb[1] == true
 
-q   = 1e-10
 Xp  = ceval.pgen(Float64)
 P   = cereal.mlocator(Float64.(Xp[1]),q,true)
 Sd  = ceval.compdirect(q,P[1],Xp[2])
