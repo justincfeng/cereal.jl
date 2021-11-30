@@ -1,6 +1,3 @@
-
-# INCOMPATIBLE WITH CURRENT CODE
-
 #-----------------------------------------------------------------------
 module ceval    # Evaluation module for cereal
 #-----------------------------------------------------------------------
@@ -9,13 +6,19 @@ using LinearAlgebra
 
 include("type.jl")
 include("minkowski.jl")
+include("cereal.jl")
 
 #-----------------------------------------------------------------------
-#   Point generators
-#-----------------------------------------------------------------------
+"""
+# Vector generator
 
-#-----------------------------------------------------------------------
-function vgenerator( tpfl::DataType )    # Generates random 3-vector
+    vgenerator( tpfl::DataType )
+
+This function generates a random 3-vector of unit length. Returns a 
+three component vector.
+
+"""     #---------------------------------------------------------------
+function vgenerator( tpfl::DataType=Float64 ) 
     b = false
     v = zeros(tpfl,3)
 
@@ -32,41 +35,58 @@ function vgenerator( tpfl::DataType )    # Generates random 3-vector
         v = tpfl[ vx ; vy ; vz ]/vl     # Normalization
     end
     return v
-end  # End vgenerator
+end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-function nullgen( tpfl::DataType )   
-    # Generates random past-directed null vector
+"""
+# Null vector generator
+
+    nullgen( tpfl::DataType )
+
+This function generates a random past directed null vector. Returns a
+four component vector.
+
+"""     #---------------------------------------------------------------
+function nullgen( tpfl::DataType=Float64 )   
     v = vgenerator(tpfl)
-
-    V = [ -norm(v) ; v[1] ; v[2] ; v[3] ]
-
-    return V
-end  # End nvgenerator
+    return [ -norm(v) ; v[1] ; v[2] ; v[3] ]
+end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-function pgen( tpfl::DataType , N::Int=4 )     
-    # Generates N random emission points on past null cone of Xc
+"""
+# Intersection and emission point generator
 
+    pgen( tpfl::DataType , N::Int )
+
+This function generates a point `Xc` and `N` random emission points (in
+a ``4×```N` matrix `X`) on the past null cone of `Xc`. Returns a tuple
+`(X,Xc)`.
+
+"""     #---------------------------------------------------------------
+function pgen( tpfl::DataType=Float64 , N::Int=4 )     
     v = (one(tpfl) + rand(tpfl))*vgenerator(tpfl)
-    
     Xc = [ one(tpfl) + rand(tpfl) ; v[1] ; v[2] ; v[3] ]   # Generate Xc
-
     X = zeros(tpfl,4,N)     # Create container
-
     for i=1:N
         λ = (one(tpfl)+rand(tpfl))      # Affine parameter
         k = nullgen(tpfl)   # Null vector
         X[:,i] = Xc + λ*k   # Emission point
     end
-
     return (X,Xc)           # Return emission points and target point Xc
-end  # End pointgenerator
+end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+"""
+# Restricted intersection and emission point generator
+
+    xgen( xc::Real , r1::Real , r2::Real , N::Int )
+
+This function generates a point `Xc=[0;xc;0;0]` and `N` random emission
+points (in a ``4×```N` matrix `X`) on the past null cone of `Xc` at a
+radius `r` such that `r1<r<r2`. Returns a tuple `(X,Xc)`.
+
+"""     #---------------------------------------------------------------
 function xgen( xc::Real , r1::Real , r2::Real=r1 , N::Int=4 )
-    # Generates N random emission points on past null cone of [0;xc;0;0]
-    # at radius r s.t. r1<r<r2
     tpfl = typeof(xc)
 	X = zeros(tpfl,4,N)	
 	for i=1:N
@@ -84,23 +104,23 @@ function xgen( xc::Real , r1::Real , r2::Real=r1 , N::Int=4 )
 		X[3,i] = y
 		X[4,i] = z
 	end	#end for
-
-    v = zeros(tpfl,3,3)
-    # Tetrahedron volume calculator 
-    v[:,1] = X[2:4,2] - X[2:4,1]
-    v[:,2] = X[2:4,3] - X[2:4,1]
-    v[:,3] = X[2:4,4] - X[2:4,1]
-    vol = abs(det([ v[:,1]  v[:,2]  v[:,3] ]))/6
-
-	return (X,tpfl[0;xc;0;0],vol)
-end	# End xgen
+	return (X,tpfl[0;xc;0;0])
+end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-#   Comparison function
-#-----------------------------------------------------------------------
+"""
+# Comparison function
 
-#-----------------------------------------------------------------------
-function compdirect( q::Real , P::RealVec , Xc::RealVec )
+    comp( q::Real , P::RealVec , Xc::RealVec )
+
+This function compares the vectors `P` and `Xc` by taking the L1 norm of
+the difference and comparing it with the L1 norm of `Xc`. If the ratio
+`δ=|P-Xc|/|Xc|` is small compared to the threshold parameter `q`, the
+function returns a tuple `(true,δ)`. The function returns `(false,δ)`
+otherwise.
+
+"""     #---------------------------------------------------------------
+function comp( q::Real , P::RealVec , Xc::RealVec )
     # Checks if location points P are recovered
     tpfl=typeof(q)
 
@@ -111,145 +131,82 @@ function compdirect( q::Real , P::RealVec , Xc::RealVec )
     else
         return ( false , δ )
     end
-end  # End compdirect
+end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-function nrat( V::RealVec )        # Norm ratio
-    return abs(η(V,V)/dot(V,V))
-end  # End nrat
-
-#-----------------------------------------------------------------------
-function compnull( q::Real , P1::RealVec , P2::RealVec , X::RealMtx , 
-                   Xc::RealVec )
-    # Checks if separation vectors are null
-    # This is not used; nrat is too sensitive to machine precision errs.
-    tpfl=typeof(q)
-
-    VT1 = [ nrat( P1 - X[:,1] ) ; nrat( P1 - X[:,2] ) ;
-            nrat( P1 - X[:,3] ) ; nrat( P1 - X[:,4] ) ]
-
-    VT2 = [ nrat( P2 - X[:,1] ) ; nrat( P2 - X[:,2] ) ;
-            nrat( P2 - X[:,3] ) ; nrat( P2 - X[:,4] ) ]
-
-    A1  = ( VT1[1] + VT1[2] + VT1[3] + VT1[4] ) / 4
-    A2  = ( VT2[1] + VT2[2] + VT2[3] + VT2[4] ) / 4
-
-    Δ   = Delta(X)
-    χ   = Δ[2]
-
-    if A1 < q && A2 < q
-        return ( true  , X , A1 , A2 , Xc , P1 , P2 , Δ[1] ,
-                η(χ,χ) )
-    else
-        return ( false , X , A1 , A2 , Xc , P1 , P2 , Δ[1] ,
-                η(χ,χ) )
-    end
-end  # End compnull
-
-#-----------------------------------------------------------------------
-#   Test functions
+#   Evaluation function
 #-----------------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-function full( iters::Number , q::Real , erm::Bool=true , 
-               counter::Bool=true )
-    # Main test function--q determines floating point datatype
-    tpfl=typeof(q)
-    lb=false
-    mi = zero(Int64)
+"""
+# Evaluation function
 
-    for i=1:Int64(iters)
-        B = true
-        if counter
-            print("\r$i")
-        end
-        Xp   = pgen(tpfl,4)
-        P    = cereal.slocator(tpfl.(Xp[1]),erm)
-        Sda  = compdirect(q,P[1],Xp[2])
-        Sdb  = compdirect(q,P[2],Xp[2])
-        Δ    = Delta( tpfl.(Xp[1]) )
-        # Sn   = compnull(q,P[1],P[2],Xp[1],Xp[2])
-        if Sda[1] != true && Sdb[1] != true # || Sn[1] != true
-            print("\n",Xp[1],"\n",Xp[2],"\n",P[1],"\n",P[2],"\n",
-                  Δ[1]," ",Δ[2]," ",Δ[3]," ",Δ[4]," ","\n",
-                  sort([Sda[2],Sdb[2]])[1],"\n")
-            lb = true
-            mi += 1
-        end
-    end
-    if lb
-        print("\rTest ended with ",mi," failed cases out of "
-              ,iters," \n")
-    else
-        print("\rTest ended with zero failed cases out of ",iters," \n")
-    end
-end  # End full
+    full( locator::Function , N::Number , q::Real , k::Number ,     
+          counter::Bool , usexgen::Bool )
 
-#-----------------------------------------------------------------------
-function xtest( iters::Number , q::Real , erm::Bool=true , 
-                counter::Bool=true )
-    tpfl=typeof(q)
-    lb=false
-    mi = zero(Int64)
+This function tests the user specified `locator` function for `N` stochastically generated test cases. The results produced by the `locator` are compared (by way of the `comp` function) to the generated intersection points up to a threshold value of `q`. The variable `k` is the number of emission points to generate for each test case, and the variable `usexgen` replaces the function `pgen` with `xgen` for test case generation.
 
-    for i=1:Int64(iters)
-        B = true
-        if counter
-            print("\r$i")
-        end
-	    xc  = tpfl(2 + rand(tpfl))
-	    X   = xgen(xc,tpfl(1))
-        P   = cereal.slocator(tpfl.(X[1]),erm)
-        Sda = compdirect(q,P[1],X[2])
-        Sdb = compdirect(q,P[2],X[2])
-        Δ   = Delta( X[1] )
-        # Sn   = compnull(q,P[1],P[2],Xp[1],Xp[2])
-        if Sda[1] != true && Sdb[1] != true # || Sn[1] != true
-            print("\n",X[1],"\n",X[2],"\n",P[1],"\n",P[2],"\n",
-                  Δ[1]," ",Δ[2]," ",Δ[3]," ",Δ[4]," ","\n",
-                  X[3]," ",sort([Sda[2],Sdb[2]])[1],"\n")
-            lb = true
-            mi += 1
-        end
-    end
-    if lb
-        print("\rTest ended with ",mi," failed cases out of "
-              ,iters," \n")
-    else
-        print("\rTest ended with zero failed cases out of ",iters," \n")
-    end
-end # End xtest
+Examples:
 
-#-----------------------------------------------------------------------
-function fullmulti( iters::Number , q::Real ,
-                     N::Number=5 , erm::Bool=true , counter::Bool=true )
+    ceval.full(cereal.locatorfunc(4,"CFM10"),1e5,1e-6,4)
+
+    ceval.full(cereal.locatorfunc(4,"FHC21"),1e5,1e-6,4)
+
+    ceval.full(cereal.locatorfunc(5,"RTC21"),1e5,1e-9,5)
+
+    ceval.full(cereal.locatorfunc(6,"RTC21"),1e5,1e-13,6)
+
+"""     #---------------------------------------------------------------
+function full( locator::Function , N::Number , q::Real , k::Number=5 ,  
+               usexgen::Bool=false )
     # Main test function--q determines floating point datatype
     tpfl    = typeof(q)
     lb      = false
-    mi      = zero(Int64)
+    mi      = zero(Int)
     P       = zeros(tpfl,4)
 
-    for i=1:Int64(iters)
-        if counter
-            print("\r$i")
+    print(Int(N)," cases"," \n")
+    print(k," emission points"," \n")
+
+    for i=1:Int(N)
+        if usexgen
+            xc  = tpfl(2 + rand(tpfl))
+	        Xp  = xgen(xc,tpfl(1))
+        else
+            Xp  = pgen(tpfl,k)
         end
-        Xp  = pgen(tpfl,N)
-        P   = cereal.mlocator(tpfl.(Xp[1]),q,erm)
-        Sd  = compdirect(q,P[1],Xp[2])
-        if Sd[1] != true
-            print("\n",Xp[1],"\n",Xp[2],"\n",Sd[2],"\n")
-            lb  = true
-            mi  += 1
+        print("\r$i")
+        P   = locator(Xp[1])
+        if length(P) == 4
+            Sd  = comp(q,P,Xp[2])
+            if Sd[1] != true
+                print("\n",Xp[1],"\n",Xp[2],"\n",Sd[2],"\n")
+                lb  = true
+                mi  += 1
+            end
+        elseif length(P) == 2 && typeof(P[1]) == typeof(P[2])
+            Sda  = comp(q,P[1],Xp[2])
+            Sdb  = comp(q,P[2],Xp[2])
+            if Sda[1] != true && Sdb[1] != true
+                print("\n",Xp[1],"\n",Xp[2],"\n",Sda[2],"\n",Sdb[2],
+                      "\n")
+                lb = true
+                mi += 1
+            end
+        else
+            print("\n","Check locator function"," \n")
+            lb = true
+            mi += 1        
         end
     end
     if lb
         print("\rTest ended with ",mi," failed cases out of "
-                ,iters," \n")
+                ,Int(N)," \n")
     else
         print("\rTest ended with zero failed cases out of "
-                ,iters," \n")
+                ,Int(N)," \n")
     end
-end  # End fullmulti
+end  # End full
 
 #-----------------------------------------------------------------------
 end     # End scope of module ceval

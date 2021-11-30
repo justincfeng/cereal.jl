@@ -51,10 +51,8 @@ function locatorfunc( N::Int=5 , Method::String="RTC21" )
             return X -> zeros(Float64,4)
         end
     elseif  N == 5 && Method == "RTC21"
-        include("alg/RTC21.jl")
         return locator5RTC21
     elseif  N > 5 && Method == "RTC21"
-        include("alg/RTC21.jl")
         return (X,q=1e-14) -> mlocator(X,locator5RTC21,5,false,q)
     elseif  N >= 5 && Method != "RTC21"
         if  Method == "CFM10"
