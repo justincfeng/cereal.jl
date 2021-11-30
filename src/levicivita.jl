@@ -22,7 +22,7 @@ instance, the following
 yields the rank-2 quantity ``ϵ_{i,j,k,l} U^i V^i``. Make sure all `0`
 valued arguments come first.
 
-"""     #---------------------------------------------------------------
+"""
 function ϵ( a , b , c , d )              # Levi-Civita symbol and tensor
     if a == 0 && typeof(b) <: RealVec && typeof(c) <: RealVec && 
         typeof(d) <: RealVec
@@ -68,7 +68,7 @@ end     #---------------------------------------------------------------
 This function computes `ϵ(0,U,V,W)`` and effectively raises the index of
 the resulting (dual) vector.
 
-"""     #---------------------------------------------------------------
+"""
 function HodgeV( U::RealVec , V::RealVec , W::RealVec )
     v = ϵ(0,U,V,W)
     v[1] = -v[1]        # Raise index

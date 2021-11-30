@@ -8,7 +8,7 @@ This function takes a ``m×n`` matrix `X`, and for `k```<n``,
 constructs a vector of ``m×```k` matrices constructed from all choices
 of `k` columns from the ``m×n`` matrix `X`.
 
-"""     #---------------------------------------------------------------
+"""
 function multivec( X::RealMtx , k::Int )  
     tpfl = typeof(X[1,1])
     d    = size(X)[1]
@@ -52,7 +52,7 @@ parameter `q`.
 In all cases, the errors are minimized by sorting points according to
 their Minkowski norms and selecting the point with the smallest norm.
 
-"""     #---------------------------------------------------------------
+"""
 function mlocator( X::RealMtx , locator::Function , Nbase::Int=5 , 
                    dual::Bool=false , q::Real=1e-14 )
     tpfl = typeof(X[1,1])

@@ -33,7 +33,7 @@ By default, the locator function assumes `N=5` and `Method="RTC21"`:
     julia> locatorfunc() == locatorfunc(5,"RTC21")
     true
 
-"""     #---------------------------------------------------------------
+"""
 function locatorfunc( N::Int=5 , Method::String="RTC21" )
     if N < 4 
         print("No methods available.")

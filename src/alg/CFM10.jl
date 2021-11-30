@@ -19,7 +19,7 @@ differences between the emission points `` X_I ``:
 
 where the index `` i `` runs from ``1`` through ``3``.
 
-"""     #---------------------------------------------------------------
+"""
 function Frame( X::RealMtx ) # Constructs spatial frame
     tpfl=typeof(X[1,1])
     s = 1
@@ -40,7 +40,7 @@ This function constructs the configuration vector `` χ ``, which is
 normal to the hyperplane spanned by the three vectors `` e_1 ``, `` e_2 ``,
 `` e_3 ``.
 
-"""     #---------------------------------------------------------------
+"""
 function ConfVec( E::RealMtx )
     tpfl=typeof(E[1,1])
 
@@ -57,7 +57,7 @@ This function constructs the vector `` ξ ``, which is arbitrary except
 for the requirement that it be transverse to `` χ ``. Here, the vector 
 `` ξ `` is constructed so that `` η(ξ,χ) = 1``.
 
-"""     #---------------------------------------------------------------
+"""
 function AuxVec( χ::RealVec )
     tpfl=typeof(χ[1])
 
@@ -88,7 +88,7 @@ where `` H `` is a bivector given by (`h(⋅,⋅)=-ϵ(0,0,⋅,⋅)`):
 
 and `` Ω_i := η(e_i,e_i) ``.
 
-"""     #---------------------------------------------------------------
+"""
 function ystar( E::RealMtx , χ::RealVec , ξ::RealVec )
     tpfl=typeof(E[1,1])
 
@@ -133,7 +133,7 @@ scalar quantity
 
 `` Δ := η(y_*,χ)^2 - η(y_*,y_*) η(χ,χ) ``.
 
-"""     #---------------------------------------------------------------
+"""
 function Delta( χ::RealVec , ys::RealVec )
     return η(ys,χ)^2 - η(ys,ys)*η(χ,χ)
 end     #---------------------------------------------------------------
@@ -152,7 +152,7 @@ location formula given by Coll, Ferrando, and Morales-Lladosa:
 See Coll et al., Class.Quant.Grav. 27 (2010) 065013 and Coll et al., 
 Phys. Rev. D 86, 084036 (2012) for details.
 
-"""     #---------------------------------------------------------------
+"""
 function locator4CFM10( X::RealMtx )     # Locator function
     tpfl=typeof(X[1,1])
 

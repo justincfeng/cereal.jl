@@ -17,7 +17,7 @@ include("cereal.jl")
 This function generates a random 3-vector of unit length. Returns a 
 three component vector.
 
-"""     #---------------------------------------------------------------
+"""
 function vgenerator( tpfl::DataType=Float64 ) 
     b = false
     v = zeros(tpfl,3)
@@ -46,7 +46,7 @@ end     #---------------------------------------------------------------
 This function generates a random past directed null vector. Returns a
 four component vector.
 
-"""     #---------------------------------------------------------------
+"""
 function nullgen( tpfl::DataType=Float64 )   
     v = vgenerator(tpfl)
     return [ -norm(v) ; v[1] ; v[2] ; v[3] ]
@@ -62,7 +62,7 @@ This function generates a point `Xc` and `N` random emission points (in
 a ``4×```N` matrix `X`) on the past null cone of `Xc`. Returns a tuple
 `(X,Xc)`.
 
-"""     #---------------------------------------------------------------
+"""
 function pgen( tpfl::DataType=Float64 , N::Int=4 )     
     v = (one(tpfl) + rand(tpfl))*vgenerator(tpfl)
     Xc = [ one(tpfl) + rand(tpfl) ; v[1] ; v[2] ; v[3] ]   # Generate Xc
@@ -85,7 +85,7 @@ This function generates a point `Xc=[0;xc;0;0]` and `N` random emission
 points (in a ``4×```N` matrix `X`) on the past null cone of `Xc` at a
 radius `r` such that `r1<r<r2`. Returns a tuple `(X,Xc)`.
 
-"""     #---------------------------------------------------------------
+"""
 function xgen( xc::Real , r1::Real , r2::Real=r1 , N::Int=4 )
     tpfl = typeof(xc)
 	X = zeros(tpfl,4,N)	
@@ -119,7 +119,7 @@ the difference and comparing it with the L1 norm of `Xc`. If the ratio
 function returns a tuple `(true,δ)`. The function returns `(false,δ)`
 otherwise.
 
-"""     #---------------------------------------------------------------
+"""
 function comp( q::Real , P::RealVec , Xc::RealVec )
     # Checks if location points P are recovered
     tpfl=typeof(q)
@@ -144,7 +144,13 @@ end     #---------------------------------------------------------------
     full( locator::Function , N::Number , q::Real , k::Number ,     
           counter::Bool , usexgen::Bool )
 
-This function tests the user specified `locator` function for `N` stochastically generated test cases. The results produced by the `locator` are compared (by way of the `comp` function) to the generated intersection points up to a threshold value of `q`. The variable `k` is the number of emission points to generate for each test case, and the variable `usexgen` replaces the function `pgen` with `xgen` for test case generation.
+This function tests the user specified `locator` function for `N`
+stochastically generated test cases. The results produced by the
+`locator` are compared (by way of the `comp` function) to the generated
+intersection points up to a threshold value of `q`. The variable `k` is
+the number of emission points to generate for each test case, and the
+variable `usexgen` replaces the function `pgen` with `xgen` for test
+case generation.
 
 Examples:
 
@@ -156,7 +162,7 @@ Examples:
 
     ceval.full(cereal.locatorfunc(6,"RTC21"),1e5,1e-13,6)
 
-"""     #---------------------------------------------------------------
+"""
 function full( locator::Function , N::Number , q::Real , k::Number=5 ,  
                usexgen::Bool=false )
     # Main test function--q determines floating point datatype

@@ -17,7 +17,7 @@ This function takes a timelike normal vector `NT` and constructs a
 Lorentz transformation matrix so that the transformed vector `NT'` has 
 the form `NT'=[ N0 ; 0 ; 0 ; 0 ]`.
 
-"""     #---------------------------------------------------------------
+"""
 function LTM( NT::RealVec )             # Lorentz transformation matrix
     tpfl=typeof(NT[1])
     normv = mnorm(NT)           # Normalization factor
@@ -56,7 +56,7 @@ This function takes a vector `v` and constructs a rotation matrix so
 that the transformed vector `v'` has the form `v'=[ 0 ; ... ; 0 ; vz ]`.
 The three-dimensional and four-dimensional cases are considered.
 
-"""     #---------------------------------------------------------------
+"""
 function MRz( v::RealVec )                   # Rotate to z-adapted frame
     tpfl=typeof(v[1])
     l = one(tpfl)
@@ -105,7 +105,7 @@ This function applies the transformation transformation matrix `Λ` to
 four emission points, which form the columns of a ``4×4`` matrix `X`. The
 function returns a ``4×4`` matrix of transformed points `X'`.
 
-"""     #---------------------------------------------------------------
+"""
 function Lrot( X::RealMtx , Λ::RealMtx )  # Spacetime rotation operator
     tpfl = typeof(X[1,1])
 
@@ -133,7 +133,7 @@ This function is used to construct a timelike vector from a spacelike
 configuration vector (defined to be the vector normal to the plane 
 spanned by the emission points).
 
-"""     #---------------------------------------------------------------
+"""
 function NormflipS( Vsl::RealVec )
     tpfl = typeof(Vsl[1])
 
@@ -182,7 +182,7 @@ circumcenter yields the spatial coordinates of the intersection point
 `` X_c `` and the time coordinate is given by the common time coordinate 
 of the emission points plus the radius of the circumsphere.
 
-"""     #---------------------------------------------------------------
+"""
 function IPFinderS( Y::RealMtx )   
     # Finds intersection of light cones in adapted frame
     tpfl=typeof(Y[1,1])
@@ -229,7 +229,7 @@ vertex and the hyperboloid yields the `` z_c = z_e ± R `` coordinate of the
 intersection points `` X_c ``, where `` z_e `` is the common `` z `` coordinate
 for the emission points in the adapted frame.
 
-"""     #---------------------------------------------------------------
+"""
 function IPFinderT( Y::RealMtx )   
     # Finds intersection of light cones in adapted frame
     # Spacelike subconfiguration plane
@@ -385,7 +385,7 @@ this is known as the bifurcation problem (Coll et al., Phys. Rev. D 86,
 084036 (2012)). The addition of a fifth emission point will in most
 cases permit the selection of a single emission point.
 
-"""     #---------------------------------------------------------------
+"""
 function locator4FHC21( X::RealMtx )
     #   Computes location from a single set of four emission points
     tpfl = typeof(X[1,1])

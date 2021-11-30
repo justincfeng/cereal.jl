@@ -12,7 +12,7 @@ This function takes two vectors ``V_1`` and ``V_2`` of equal length, and
 computes their Minkowski product ``η(V_1,V_2)``, with the assumption
 that the first element of the vectors corresponds to the time component.
 
-"""     #---------------------------------------------------------------
+"""
 function η( V1::RealVec , V2::RealVec )
     l1 = length(V1)
     l2 = length(V2)
@@ -40,7 +40,7 @@ equivalent to the absolute value of the square root of the Minkowski
 product ``√|η(V_1,V_2)|``. However, this function computes the result
 according to the formula used in the hypot function.
 
-"""     #---------------------------------------------------------------
+"""
 function mnorm( V )
     l = length(V)
 
@@ -71,7 +71,7 @@ argument `dim` specifies the dimension. The default values are
     julia> ημν() == ημν( Float64 , 4 )
         true
 
-"""     #---------------------------------------------------------------
+"""
 function ημν( tpfl::DataType=Float64 , dim::Int=4 )   # Minkowski metric
     gη = Matrix(one(tpfl)*(I(dim)))
 
