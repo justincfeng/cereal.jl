@@ -159,7 +159,7 @@ Examples:
 
     ceval.main(cereal.locatorfunc(5,"RTC21"),1e5,1e-9,5)
 
-    ceval.main(cereal.locatorfunc(6,"RTC21"),1e5,1e-13,6)
+    ceval.main(cereal.locatorfunc(6,"RTC21"),1e5,5e-13,6)
 
 """
 function main( locator::Function , N::Number , q::Real , k::Number=5 ,  
