@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------
-module ceval    # Evaluation module for cereal
+module eval    # Evaluation module for cereal
 #-----------------------------------------------------------------------
 
 using LinearAlgebra
@@ -213,5 +213,5 @@ function main( locator::Function , N::Number , q::Real , k::Number=5 ,
 end  # End full
 
 #-----------------------------------------------------------------------
-end     # End scope of module ceval
+end     # End scope of module eval
 #-----------------------------------------------------------------------

@@ -10,7 +10,7 @@ include("type.jl")
 include("minkowski.jl")
 include("levicivita.jl")
 include("multi.jl")
-include("ceval.jl")
+include("eval.jl")
 
 include("alg/RTC21.jl")
 include("alg/CFM10.jl")
