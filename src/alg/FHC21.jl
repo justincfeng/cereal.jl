@@ -343,47 +343,7 @@ end  # End IPfinder
     locator4FHC21( X::RealMtx )
 
 This function implements the four point relativistic location algorithm
-of the authors based on performing transformations to adapted frames.
-    
-The algorithm is conceptually simple for a spacelike hyperplane:
-
-1. Find and perform a Lorentz transformation such that the four points
-    ``X_i`` (labeled with ``i∈``{1,2,3,4}) have the same time coordinate in
-    the transformed frame. In the transformed frame, the four points
-    form a tetrahedron in space at some instant in time.
-
-2. Assuming the tetrahedron has finite volume, find the circumcenter and
-    circumradius. The circumcenter provides the spatial coordinates of
-    the intersection point in the new frame, and the circumradius
-    provides the time coordinate (via time of flight).
-
-3. Transform back to obtain the coordinates of the intersection point in
-    the original frame.
-
-The computed point ``X_c`` should satisfy the four constraints
-``dX_I^2:=η_{μν}(X_c^μ-X^μ_I)(X_c^ν-X^ν_I)=0``, where ``μ``, ``ν`` are
-spacetime indices and ``η_{μν}`` is the Minkowski metric. 
-
-The case of a timelike hyperplane is conceptually similar, but more
-intricate:
-
-1. Find and perform a Lorentz transformation such that the four points
-    ``X_I`` (labeled with ``I∈`` {1,2,3,4}) lie on a plane ``P_z`` specified
-    by a ``z`` coordinate in the transformed frame. In the transformed
-    frame, the four points lie on an elliptic hyperboloid.
-
-2. Find the vertex of the hyperboloid, and the Minkowski distance ``R``
-    from the vertex to a point on the hyperboloid. There are two
-    intersection points. The ``z`` coordinate for the intersection points
-    is a distance ``R`` in the direction normal to the ``P_z`` plane.
-
-3. Transform back to obtain the coordinates of the intersection point in
-    the original frame.
-
-There are two intersection points in the case of a timelike hyperplane;
-this is known as the bifurcation problem (Coll et al., Phys. Rev. D 86,
-084036 (2012)). The addition of a fifth emission point will in most
-cases permit the selection of a single emission point.
+of the authors. It outputs a pair of location points.
 
 """
 function locator4FHC21( X::RealMtx )

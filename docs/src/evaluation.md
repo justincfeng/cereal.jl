@@ -1,5 +1,8 @@
 # Evaluation
 
+The details of evaluation functions are provided here in case one is
+interested in performing more detailed tests of the location algorithms.
+
 ## Main evaluation function
 
 ```@docs

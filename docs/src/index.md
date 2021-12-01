@@ -31,10 +31,10 @@ implemented, which are represented by the strings `CFM10`, `FHC21` and
 requires at least five emission points. 
 
 To select the locator function associated with the method `RTC21`, use
-the `cereal.locatorfunc` function, which outputs the appropriate locator
+the `cereal.locatorselect` function, which outputs the appropriate locator
 function:
 
-    locator = cereal.locatorfunc(5,"RTC21")
+    locator = cereal.locatorselect(5,"RTC21")
 
 The first argument is the number of emission points; for the method
 `RTC21`, the value should be at least `5` (larger values yield functions
@@ -55,15 +55,15 @@ type `Float64`).
 ### Other methods
 
 The methods `CFM10`, `FHC21` are four point methods, the first argument
-of `cereal.locatorfunc` can have a value of at least `4`. 
+of `cereal.locatorselect` can have a value of at least `4`. 
 
 To try out the method `CFM10`, one may use the following command:
 
-    locator4a = cereal.locatorfunc(4,"CFM10")
+    locator4a = cereal.locatorselect(4,"CFM10")
 
 To try out the method `FHC21`, use:
 
-    locator4b = cereal.locatorfunc(4,"FHC21")
+    locator4b = cereal.locatorselect(4,"FHC21")
 
 Since four point methods generally suffer from the bifurcation problem
 (see Coll et al., Phys. Rev. D 86, 084036 (2012)), these locator
@@ -82,22 +82,22 @@ If one increases the number of emission points, then the resulting
 functions take additional emission points into consideration for the
 purpose of minimizing errors:
 
-    locator5a = cereal.locatorfunc(5,"CFM10")
+    locator5a = cereal.locatorselect(5,"CFM10")
 
-    locator5b = cereal.locatorfunc(5,"FHC21")
+    locator5b = cereal.locatorselect(5,"FHC21")
 
 ### Evaluation
 
 Routines have been written to evaluate the methods more comprehensively.
 The function `cereal.ceval.main(locator,N,q,ne)` takes a locator function `locator` generates `N` sets of emission points `X` on the past light cone of target points `Xtar`, feeds each set into `locator`, and checks that `locator` yields results `Xc` that differ from `Xtar` by a factor less than a threshold value `q`. One may run the following:
 
-    cereal.ceval.main(cereal.locatorfunc(4,"CFM10"),100000,1e-6,4)
+    cereal.ceval.main(cereal.locatorselect(4,"CFM10"),100000,1e-6,4)
 
-    cereal.ceval.main(cereal.locatorfunc(4,"FHC21"),100000,1e-6,4)
+    cereal.ceval.main(cereal.locatorselect(4,"FHC21"),100000,1e-6,4)
 
-    cereal.ceval.main(cereal.locatorfunc(5,"RTC21"),100000,1e-9,5)
+    cereal.ceval.main(cereal.locatorselect(5,"RTC21"),100000,1e-9,5)
 
-    cereal.ceval.main(cereal.locatorfunc(6,"RTC21"),100000,5e-13,6)
+    cereal.ceval.main(cereal.locatorselect(6,"RTC21"),100000,5e-13,6)
 
 At most, one should encounter less than `10` failures in each case.
 

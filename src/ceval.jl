@@ -152,7 +152,7 @@ case generation.
 
 Example:
 
-    cereal.ceval.main(cereal.locatorfunc(5,"RTC21"),1e5,5e-13,5)
+    cereal.ceval.main(cereal.locatorselect(5,"RTC21"),1e5,5e-13,5)
 
 """
 function main( locator::Function , N::Number , q::Real , k::Number=5 ,  

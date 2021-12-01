@@ -36,21 +36,8 @@ end     #---------------------------------------------------------------
 
     mlocator( X::RealMtx , locator::Function , Nbase::Int , dual::Bool, q::Real )
 
-This computes the intersection point ``X_c`` for a large number of
-emission points. Given an ``m×n`` matrix `X` of ``n`` emission
-points, and a function `locator` designed to work with `Nbase```<n``
-emission points, this function is designed to minimize errors and solve
-the bifurcation problem when needed.
-
-For `locator` functions designed to work with ``N = 4`` emission
-points, the bifurcation problem is solved by way of a rudimentary
-clustering algorithm. The clustering algorithm sorts points according to
-their norms and identifies closely clustered points according to the
-differences between the neighbors of the sorted points, and the tolerance
-parameter `q`.
-
-In all cases, the errors are minimized by sorting points according to
-their Minkowski norms and selecting the point with the smallest norm.
+This computes a single intersection point ``X_c`` for a large number of
+emission points `X`, given a locator function `locator`.
 
 """
 function mlocator( X::RealMtx , locator::Function , Nbase::Int=5 , 

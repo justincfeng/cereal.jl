@@ -20,7 +20,7 @@ include("alg/FHC21.jl")
 """
 # Locator function
 
-    locatorfunc( N::Int , Method::String )
+    locatorselect( N::Int , Method::String )
 
 This function selects the locator function to use. The first argument
 `N` determines the minimum number of emission points that the locator
@@ -31,11 +31,11 @@ intersection point ``X_c``. The available methods are `"FHC21"`,
 
 By default, the locator function assumes `N=5` and `Method="RTC21"`:
 
-    julia> locatorfunc() == locatorfunc(5,"RTC21")
+    julia> locatorselect() == locatorselect(5,"RTC21")
     true
 
 """
-function locatorfunc( N::Int=5 , Method::String="RTC21" )
+function locatorselect( N::Int=5 , Method::String="RTC21" )
     if N < 4 
         print("No methods available.")
         return X -> zeros(Float64,4)
