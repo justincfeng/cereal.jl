@@ -150,15 +150,9 @@ the number of emission points to generate for each test case, and the
 variable `usexgen` replaces the function `pgen` with `xgen` for test
 case generation.
 
-Examples:
+Example:
 
-    cereal.ceval.main(cereal.locatorfunc(4,"CFM10"),1e5,1e-6,4)
-
-    cereal.ceval.main(cereal.locatorfunc(4,"FHC21"),1e5,1e-6,4)
-
-    cereal.ceval.main(cereal.locatorfunc(5,"RTC21"),1e5,1e-9,5)
-
-    cereal.ceval.main(cereal.locatorfunc(6,"RTC21"),1e5,5e-13,6)
+    cereal.ceval.main(cereal.locatorfunc(5,"RTC21"),1e5,5e-13,5)
 
 """
 function main( locator::Function , N::Number , q::Real , k::Number=5 ,  

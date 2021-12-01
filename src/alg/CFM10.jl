@@ -147,7 +147,7 @@ end     #---------------------------------------------------------------
 The function presented here implements the four point relativistic 
 location formula given by Coll, Ferrando, and Morales-Lladosa:
 
-`` X_c = X_4 + y_* - \\frac{η(y_*,y_*)}{η(y_*,χ)±√Δ} χ ``.
+`` X_c = X_4 + y_* - \\frac{η(y_*,y_*)}{η(y_*,χ)±√|Δ|} χ ``.
 
 See Coll et al., Class.Quant.Grav. 27 (2010) 065013 and Coll et al., 
 Phys. Rev. D 86, 084036 (2012) for details.

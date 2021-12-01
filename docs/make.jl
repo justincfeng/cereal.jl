@@ -6,7 +6,7 @@ makedocs(
     authors     = "Justin C. Feng and Filip Hejda and Sante Carloni",
     pages = [
                 "Home"              => "index.md",
-                "Locator Functions" => "locatorfuncs.md"
+                "Locator Functions" => "locatorfuncs.md",
                 "Evaluation"        => "evaluation.md",
             ]
         )
