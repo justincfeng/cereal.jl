@@ -6,7 +6,6 @@ using LinearAlgebra
 
 include("type.jl")
 include("minkowski.jl")
-include("cereal.jl")
 
 #-----------------------------------------------------------------------
 """
@@ -141,7 +140,7 @@ end     #---------------------------------------------------------------
 """
 # Evaluation function
 
-    full( locator::Function , N::Number , q::Real , k::Number ,     
+    main( locator::Function , N::Number , q::Real , k::Number ,     
           counter::Bool , usexgen::Bool )
 
 This function tests the user specified `locator` function for `N`
@@ -154,16 +153,16 @@ case generation.
 
 Examples:
 
-    ceval.full(cereal.locatorfunc(4,"CFM10"),1e5,1e-6,4)
+    ceval.main(cereal.locatorfunc(4,"CFM10"),1e5,1e-6,4)
 
-    ceval.full(cereal.locatorfunc(4,"FHC21"),1e5,1e-6,4)
+    ceval.main(cereal.locatorfunc(4,"FHC21"),1e5,1e-6,4)
 
-    ceval.full(cereal.locatorfunc(5,"RTC21"),1e5,1e-9,5)
+    ceval.main(cereal.locatorfunc(5,"RTC21"),1e5,1e-9,5)
 
-    ceval.full(cereal.locatorfunc(6,"RTC21"),1e5,1e-13,6)
+    ceval.main(cereal.locatorfunc(6,"RTC21"),1e5,1e-13,6)
 
 """
-function full( locator::Function , N::Number , q::Real , k::Number=5 ,  
+function main( locator::Function , N::Number , q::Real , k::Number=5 ,  
                usexgen::Bool=false )
     # Main test function--q determines floating point datatype
     tpfl    = typeof(q)
