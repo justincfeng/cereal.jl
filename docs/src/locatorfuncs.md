@@ -1,4 +1,4 @@
-# Locator Functions
+# Methods and Locator Functions
 
 ## Locator function selector
 
@@ -10,41 +10,46 @@ cereal.locatorselect
 
 ### The `RTC21` method
 
-The `RTC21` method is the preferred method.
+The `RTC21` formula of Ruggiero, Tartaglia, and Casalino (2021)
+[arxiv:2111.13423] is the preferred method, since it is the fastest and
+most accurate, despite requring an additional emission point. The
+calculation is rather staightforward; first define the matrix
+``\mathcal{M}`` and the vector ``B``:
+
+```math
+\mathcal{M} = 2
+  \left[
+  \begin{array}{cccc}
+    t_1-t_2  &  x_2-x_1  &  y_2-y_1  &  z_2-z_1 \\
+    t_2-t_3  &  x_3-x_2  &  y_3-y_2  &  z_3-z_2 \\
+    t_3-t_4  &  x_4-x_3  &  y_4-y_3  &  z_4-z_3 \\
+    t_4-t_5  &  x_5-x_4  &  y_5-y_4  &  z_5-z_4 \\
+  \end{array}
+  \right] ,
+```
+
+```math
+B = 
+  \left[
+  \begin{array}{cccc}
+    x_2^2-x_1^2 + y_2^2-y_1^2 + z_2^2-z_1^2 + t_1^2-t_2^2 \\
+    x_3^2-x_2^2 + y_3^2-y_2^2 + z_3^2-z_2^2 + t_2^2-t_3^2 \\
+    x_4^2-x_3^2 + y_4^2-y_3^2 + z_4^2-z_3^2 + t_3^2-t_4^2 \\
+    x_5^2-x_4^2 + y_5^2-y_4^2 + z_5^2-z_4^2 + t_4^2-t_5^2 \\
+  \end{array}
+  \right] .
+```
+
+The intersection point ``X_c`` is then given by:
+
+```math 
+X_c = \mathcal{M}^{-1} B .
+```
+
+This method is implemented in the following function:
 
 ```@docs
 cereal.locator5RTC21
-```
-
-### The `CFM10` method
-
-The `CFM10` method is the original four point relativistic location
-formula given by Coll, Ferrando, and Morales-Lladosa: 
-
-`` X_c^μ = X_4^μ + y_*^μ - \\frac{η(y_*,y_*)}{η(y_*,χ)±√|Δ|} χ^μ ``,
-
-where the following are defined:
-
-`` Δ := η(y_*,χ)^2 - η(y_*,y_*) η(χ,χ) ``
-
-`` y_*^μ := (η(ξ,χ))^{-1} (i_ξ H)^μ ``
-
-`` H := Ω_1 h(e_2,e_3) + Ω_2 h(e_3,e_1) + Ω_3 h(e_1,e_2) ``
-
-`` Ω_i := η(e_i,e_i) ``
-
-`` χ^μ = η^{μσ} ϵ_{σαβγ} e_1^α e_2^β e_3^γ``
-
-`` e_i^μ = X_i^μ - X_4^μ ``
-
-where ``h(U,V)`` yields the rank-2 tensor ``-ϵ_{αβμν} U^μ U^ν`` (so that
-``H`` is a rank-2 quantity), and ``ξ^μ`` is an arbitrary vector which we
-choose to satisfy ``η(ξ,χ)=1``. See See Coll et al., Class.Quant.Grav.
-27 (2010) 065013 and Coll et al., Phys. Rev. D 86, 084036 (2012) for the
-details of the derivation
-
-```@docs
-cereal.locator4CFM10
 ```
 
 ### The `FHC21` method
@@ -68,8 +73,13 @@ The algorithm is conceptually simple for a spacelike hyperplane:
     the original frame.
 
 The computed point ``X_c`` should satisfy the four constraints
-``dX_I^2:=η_{μν}(X_c^μ-X^μ_I)(X_c^ν-X^ν_I)=0``, where ``μ``, ``ν`` are
-spacetime indices and ``η_{μν}`` is the Minkowski metric. 
+
+```math 
+dX_I^2:=η_{μν}(X_c^μ-X^μ_I)(X_c^ν-X^ν_I)=0,
+``` 
+
+where ``μ``, ``ν`` are spacetime indices and ``η_{μν}`` is the Minkowski 
+metric. 
 
 The case of a timelike hyperplane is conceptually similar, but more
 intricate:
@@ -93,9 +103,59 @@ this is known as the bifurcation problem (Coll et al., Phys. Rev. D 86,
 084036 (2012)). The addition of a fifth emission point will in most
 cases permit the selection of a single emission point.
 
+The method described above is implemented in the following function:
+
 ```@docs
 cereal.locator4FHC21
 ```
+
+### The `CFM10` method
+
+The `CFM10` method is the original four point relativistic location
+formula given by Coll, Ferrando, and Morales-Lladosa: 
+
+```math 
+X_c^μ = X_4^μ + y_*^μ - \frac{η(y_*,y_*)}{η(y_*,χ)±\sqrt{|Δ|}} χ^μ, 
+```
+
+where the following are defined:
+
+```math 
+Δ := η(y_*,χ)^2 - η(y_*,y_*) η(χ,χ) 
+```
+
+```math 
+y_*^μ := \frac{1}{η(ξ,χ)} (i_ξ H)^μ 
+```
+
+```math
+H := Ω_1 h(e_2,e_3) + Ω_2 h(e_3,e_1) + Ω_3 h(e_1,e_2)
+```
+
+```math 
+Ω_i := η(e_i,e_i)
+```
+
+```math 
+χ^μ = η^{μσ} ϵ_{σαβγ} e_1^α e_2^β e_3^γ
+```
+
+```math 
+e_i^μ = X_i^μ - X_4^μ 
+```
+
+where ``h(U,V)`` yields the rank-2 tensor ``-ϵ_{αβμν} U^μ U^ν`` (so that
+``H`` is a rank-2 quantity), and ``ξ^μ`` is an arbitrary vector which we
+choose to satisfy ``η(ξ,χ)=1``. See See Coll et al., Class.Quant.Grav.
+27 (2010) 065013 and Coll et al., Phys. Rev. D 86, 084036 (2012) for the
+details of the derivation.
+
+The method describe above is implemented in the following function:
+
+```@docs
+cereal.locator4CFM10
+```
+
 
 ## Multi locator function
 
