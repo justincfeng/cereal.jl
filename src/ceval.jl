@@ -5,7 +5,6 @@ module ceval    # Evaluation module for cereal
 using LinearAlgebra
 
 include("type.jl")
-include("minkowski.jl")
 
 #-----------------------------------------------------------------------
 """
@@ -153,13 +152,13 @@ case generation.
 
 Examples:
 
-    ceval.main(cereal.locatorfunc(4,"CFM10"),1e5,1e-6,4)
+    cereal.ceval.main(cereal.locatorfunc(4,"CFM10"),1e5,1e-6,4)
 
-    ceval.main(cereal.locatorfunc(4,"FHC21"),1e5,1e-6,4)
+    cereal.ceval.main(cereal.locatorfunc(4,"FHC21"),1e5,1e-6,4)
 
-    ceval.main(cereal.locatorfunc(5,"RTC21"),1e5,1e-9,5)
+    cereal.ceval.main(cereal.locatorfunc(5,"RTC21"),1e5,1e-9,5)
 
-    ceval.main(cereal.locatorfunc(6,"RTC21"),1e5,5e-13,6)
+    cereal.ceval.main(cereal.locatorfunc(6,"RTC21"),1e5,5e-13,6)
 
 """
 function main( locator::Function , N::Number , q::Real , k::Number=5 ,  
