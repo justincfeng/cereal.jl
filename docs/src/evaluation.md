@@ -3,25 +3,25 @@
 ## Main evaluation function
 
 ```@docs
-ceval.main
+cereal.ceval.main
 ```
 
 ## Test case generator functions
 
 ```@docs
-ceval.vgenerator
+cereal.ceval.vgenerator
 ```
 
 ```@docs
-ceval.nullgen
+cereal.ceval.nullgen
 ```
 
 ```@docs
-ceval.pgen
+cereal.ceval.pgen
 ```
 
 ```@docs
-ceval.xgen
+cereal.ceval.xgen
 ```
 
 ## Test examples
