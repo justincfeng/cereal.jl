@@ -26,6 +26,3 @@ cereal.ceval.pgen
 ```@docs
 cereal.ceval.xgen
 ```
-
-## Test examples
-

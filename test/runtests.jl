@@ -1,16 +1,12 @@
-using Test
+using Test, LinearAlgebra, Combinatorics, Statistics
 
-using LinearAlgebra, Combinatorics, Statistics
-using OrdinaryDiffEq, ForwardDiff, DiffResults
-
-const RealVec{T<:Real} = Array{T,1}      # Defining vector datatype
-const RealMtx{T<:Real} = Array{T,2}      # Defining matrix datatype
-
-include("testfunctions.jl")
+include("../src/type.jl")
 include("../src/cereal.jl")
 
     @time @testset "cereal tests:" begin 
-            include("cereal_test.jl") 
+            include("minkowski_test.jl")
+            include("levicivita_test.jl")
+            include("alg_test.jl")
     end
 
 nothing

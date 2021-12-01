@@ -111,7 +111,3 @@ doi:[10.1088/0264-9381/27/6/065013](https://doi.org/10.1088/0264-9381/27/6/06501
 
 `FHC21`: Feng, J. C., Hejda, F., Carloni, S., *Relativistic location algorithm in curved spacetime*, (2021)  
 \[In preparation\]
-
-## Acknowledgements
-
-
