@@ -8,12 +8,12 @@ include("type.jl")
 
 #-----------------------------------------------------------------------
 """
-# Vector generator
+Vector generator.
 
-    vgenerator( tpfl::DataType )
+    vgenerator( tpfl::DataType=Float64 )
 
-This function generates a random 3-vector of unit length. Returns a 
-three component vector.
+The function `vgenerator` generates a random 3-vector of unit length.
+Returns a three component vector.
 
 """
 function vgenerator( tpfl::DataType=Float64 ) 
@@ -37,12 +37,12 @@ end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
 """
-# Null vector generator
+Null vector generator.
 
-    nullgen( tpfl::DataType )
+    nullgen( tpfl::DataType=Float64 ) 
 
-This function generates a random past directed null vector. Returns a
-four component vector.
+The function `nullgen` generates a random past directed null vector.
+Returns a four component vector.
 
 """
 function nullgen( tpfl::DataType=Float64 )   
@@ -52,13 +52,13 @@ end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
 """
-# Intersection and emission point generator
+Intersection and emission point generator.
 
-    pgen( tpfl::DataType , N::Int )
+    pgen( tpfl::DataType=Float64 , N::Int=4 )
 
-This function generates a point `Xc` and `N` random emission points (in
-a ``4×```N` matrix `X`) on the past null cone of `Xc`. Returns a tuple
-`(X,Xc)`.
+The function `pgen` generates a point `Xc` and `N` random emission
+points (in a ``4×```N` matrix `X`) on the past null cone of `Xc`.
+Returns a tuple `(X,Xc)`.
 
 """
 function pgen( tpfl::DataType=Float64 , N::Int=4 )     
@@ -75,13 +75,13 @@ end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
 """
-# Restricted intersection and emission point generator
+Restricted intersection and emission point generator.
 
-    xgen( xc::Real , r1::Real , r2::Real , N::Int )
+    xgen( xc::Real , r1::Real , r2::Real=r1 , N::Int=4 )
 
-This function generates a point `Xc=[0;xc;0;0]` and `N` random emission
-points (in a ``4×```N` matrix `X`) on the past null cone of `Xc` at a
-radius `r` such that `r1<r<r2`. Returns a tuple `(X,Xc)`.
+The function `xgen` generates a point `Xc=[0;xc;0;0]` and `N` random
+emission points (in a ``4×```N` matrix `X`) on the past null cone of
+`Xc` at a radius `r` such that `r1<r<r2`. Returns a tuple `(X,Xc)`.
 
 """
 function xgen( xc::Real , r1::Real , r2::Real=r1 , N::Int=4 )
@@ -107,15 +107,15 @@ end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
 """
-# Comparison function
+Comparison function.
 
     comp( q::Real , P::RealVec , Xc::RealVec )
 
-This function compares the vectors `P` and `Xc` by taking the L1 norm of
-the difference and comparing it with the L1 norm of `Xc`. If the ratio
-`δ=|P-Xc|/|Xc|` is small compared to the threshold parameter `q`, the
-function returns a tuple `(true,δ)`. The function returns `(false,δ)`
-otherwise.
+The function `comp` compares the vectors `P` and `Xc` by taking the L1
+norm of the difference and comparing it with the L1 norm of `Xc`. If the
+ratio `δ=|P-Xc|/|Xc|` is small compared to the threshold parameter `q`,
+the function returns a tuple `(true,δ)`. The function returns
+`(false,δ)` otherwise.
 
 """
 function comp( q::Real , P::RealVec , Xc::RealVec )
@@ -137,12 +137,12 @@ end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
 """
-# Evaluation function
+Evaluation function.
 
     main( locator::Function , N::Number , q::Real , k::Number ,     
           counter::Bool , usexgen::Bool )
 
-This function tests the user specified `locator` function for `N`
+The function `main` tests the user specified `locator` function for `N`
 stochastically generated test cases. The results produced by the
 `locator` are compared (by way of the `comp` function) to the generated
 intersection points up to a threshold value of `q`. The variable `k` is
@@ -150,7 +150,7 @@ the number of emission points to generate for each test case, and the
 variable `usexgen` replaces the function `pgen` with `xgen` for test
 case generation.
 
-Example:
+Basic example:
 
     cereal.ceval.main(cereal.locatorselect(5,"RTC21"),1e5,5e-13,5)
 

@@ -18,11 +18,11 @@ include("alg/FHC21.jl")
 
 #-----------------------------------------------------------------------
 """
-# Locator function
+Locator selection function.
 
     locatorselect( N::Int , Method::String )
 
-This function selects the locator function to use. The first argument
+The function `locatorselect` selects the locator function to use. The first argument
 `N` determines the minimum number of emission points that the locator
 function will use. `N=4` or `N≥5` is recommended. The second argument
 `Method` selects the formula or algorithm used to compute the

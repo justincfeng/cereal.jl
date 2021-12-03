@@ -4,11 +4,11 @@
 
 #-----------------------------------------------------------------------
 """
-# Levi-Civita symbol and tensor
+Levi-Civita symbol and tensor
 
     ϵ( a , b , c , d )
 
-This function computes the Levi-Civita symbol and implements the 
+The function `ϵ` computes the Levi-Civita symbol and implements the
 corresponding tensor. The arguments `( a , b , c , d )` can either be
 integers or vectors; in the case of integers, it returns the components
 of the Levi-Civita symbol, and in the case of vectors, it returns the
@@ -61,12 +61,12 @@ end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
 """
-# Hodge vector function
+Hodge vector function
 
     HodgeV( U::RealVec , V::RealVec , W::RealVec )
 
-This function computes `ϵ(0,U,V,W)`` and effectively raises the index of
-the resulting (dual) vector.
+The function `HodgeV` computes `ϵ(0,U,V,W)`` and effectively raises the
+index of the resulting (dual) vector.
 
 """
 function HodgeV( U::RealVec , V::RealVec , W::RealVec )
