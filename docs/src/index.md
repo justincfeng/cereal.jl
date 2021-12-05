@@ -12,12 +12,25 @@ relativistic location problem in flat spacetime.
 
 ## Short tutorial
 
+### Setup
+
+The `cereal.jl` code was written for and tested in Julia 1.6; we
+recommend Julia 1.6 or newer. To add the code, run the following command
+in the package manager for the Julia `REPL`:
+
+    pkg> add https://github.com/justincfeng/cereal.jl/
+
+Once added, one may access the `cereal` module with the following
+command:
+
+    julia> using cereal
+
 ### Relativistic locator
 
 To run the cereal code, one begins by generating a set of emission
 points with the following:
 
-    ( X , Xtar ) = cereal.ceval.pgen(Float64,5)
+    julia> ( X , Xtar ) = cereal.ceval.pgen(Float64,5)
 
 The quantity `Xtar` is a four component vector representing the true
 intersection point, and `X` is a ``4×5`` matrix consisting set of `4`
@@ -31,10 +44,10 @@ implemented, which are represented by the strings `CFM10`, `FHC21` and
 requires at least five emission points. 
 
 To select the locator function associated with the method `RTC21`, use
-the `cereal.locatorselect` function, which outputs the appropriate locator
-function:
+the `cereal.locatorselect` function, which outputs the appropriate
+locator function:
 
-    locator = cereal.locatorselect(5,"RTC21")
+    julia> locator = cereal.locatorselect(5,"RTC21")
 
 The first argument is the number of emission points; for the method
 `RTC21`, the value should be at least `5` (larger values yield functions
@@ -42,11 +55,11 @@ which take additional points into consideration). Once the locator
 function is selected, one may feed the emission point matrix `X` into
 the locator function to obtain the intersection point `Xc`:
 
-    Xc = locator(X)
+    julia> Xc = locator(X)
 
 The intersection point may then be compared with `Xtar`:
 
-    Xc - Xtar
+    julia> Xc - Xtar
 
 In most cases, the differences in the components should be on the order
 of the machine precision (``∼10^{-15}`` for the default floating point
@@ -59,11 +72,11 @@ of `cereal.locatorselect` can have a value of at least `4`.
 
 To try out the method `CFM10`, one may use the following command:
 
-    locator4a = cereal.locatorselect(4,"CFM10")
+    julia> locator4a = cereal.locatorselect(4,"CFM10")
 
 To try out the method `FHC21`, use:
 
-    locator4b = cereal.locatorselect(4,"FHC21")
+    julia> locator4b = cereal.locatorselect(4,"FHC21")
 
 Since four point methods generally suffer from the bifurcation problem
 (see Coll et al., Phys. Rev. D 86, 084036 (2012)), these locator
@@ -71,9 +84,9 @@ functions return a tuple of points. It should be mentioned that if one
 feeds ``4×5`` matrix `X`, the functions `locator4a` and `locator4b` only
 use the first four emission points.
 
-    Xca = locator4a(X)
+    julia> Xca = locator4a(X)
 
-    Xcb = locator4b(X)
+    julia> Xcb = locator4b(X)
 
 In the tuple `Xca`, either `Xca[1]` or `Xca[2]` should be close to the
 point `Xtar`.
@@ -82,22 +95,26 @@ If one increases the number of emission points, then the resulting
 functions take additional emission points into consideration for the
 purpose of minimizing errors:
 
-    locator5a = cereal.locatorselect(5,"CFM10")
+    julia> locator5a = cereal.locatorselect(5,"CFM10")
 
-    locator5b = cereal.locatorselect(5,"FHC21")
+    julia> locator5b = cereal.locatorselect(5,"FHC21")
 
 ### Evaluation
 
 Routines have been written to evaluate the methods more comprehensively.
-The function `cereal.ceval.main(locator,N,q,ne)` takes a locator function `locator` generates `N` sets of emission points `X` on the past light cone of target points `Xtar`, feeds each set into `locator`, and checks that `locator` yields results `Xc` that differ from `Xtar` by a factor less than a threshold value `q`. One may run the following:
+The function `cereal.ceval.main(locator,N,q,ne)` takes a locator
+function `locator` generates `N` sets of emission points `X` on the past
+light cone of target points `Xtar`, feeds each set into `locator`, and
+checks that `locator` yields results `Xc` that differ from `Xtar` by a
+factor less than a threshold value `q`. One may run the following:
 
-    cereal.ceval.main(cereal.locatorselect(4,"CFM10"),100000,1e-6,4)
+    julia> cereal.ceval.main(cereal.locatorselect(4,"CFM10"),100000,1e-6,4)
 
-    cereal.ceval.main(cereal.locatorselect(4,"FHC21"),100000,1e-6,4)
+    julia> cereal.ceval.main(cereal.locatorselect(4,"FHC21"),100000,1e-6,4)
 
-    cereal.ceval.main(cereal.locatorselect(5,"RTC21"),100000,1e-9,5)
+    julia> cereal.ceval.main(cereal.locatorselect(5,"RTC21"),100000,1e-9,5)
 
-    cereal.ceval.main(cereal.locatorselect(6,"RTC21"),100000,5e-13,6)
+    julia> cereal.ceval.main(cereal.locatorselect(6,"RTC21"),100000,5e-13,6)
 
 At most, one should encounter less than `10` failures in each case.
 
