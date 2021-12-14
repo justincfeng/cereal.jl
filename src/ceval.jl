@@ -112,7 +112,7 @@ Comparison function.
     comp( q::Real , P::RealVec , Xc::RealVec )
 
 The function `comp` compares the vectors `P` and `Xc` by taking the L1
-norm of the difference and comparing it with the L1 norm of `Xc`. If the
+norm of the difference and comparing it with the L2 norm of `Xc`. If the
 ratio `δ=|P-Xc|/|Xc|` is small compared to the threshold parameter `q`,
 the function returns a tuple `(true,δ)`. The function returns
 `(false,δ)` otherwise.
@@ -122,7 +122,7 @@ function comp( q::Real , P::RealVec , Xc::RealVec )
     # Checks if location points P are recovered
     tpfl=typeof(q)
 
-    δ = abs( norm(tpfl.(P-Xc),1) / norm(tpfl.(Xc),1) )
+    δ = abs( norm(tpfl.(P-Xc)) / norm(tpfl.(Xc)) )
 
     if δ < abs(q)
         return ( true  , δ )
