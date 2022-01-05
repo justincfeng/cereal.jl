@@ -15,13 +15,14 @@ relativistic location problem in flat spacetime.
 ### Setup
 
 The `cereal.jl` code was written for and tested in Julia 1.6; we
-recommend Julia 1.6 or newer. To add the code, run the following command
-in the package manager for the Julia `REPL`:
+recommend Julia 1.6 or newer. To add the code, open the Julia `REPL`, 
+then open the the package manager by typing `]`. In the package manager,
+run the following command:
 
     pkg> add https://github.com/justincfeng/cereal.jl/
 
-Once added, one may access the `cereal` module with the following
-command:
+The package manager can be exited by pressing the backspace key. Once 
+added, one may access the `cereal` module with the following command:
 
     julia> using cereal
 
