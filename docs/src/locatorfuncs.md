@@ -54,8 +54,8 @@ cereal.locator5RTC21
 
 ### The `FHC21` method
 
-The `FHC21` method is a method developed by the authors, which shows
-slight improvement over the `CFM10` method.
+The `FHC21` method is a method developed by Feng, Hejda, and Carloni, 
+which shows slight improvement over the `CFM10` method.
 
 The algorithm is conceptually simple for a spacelike hyperplane:
 
