@@ -3,9 +3,9 @@
 #-----------------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   THE MINKOWSKI PRODUCT (RECTANGULAR COORDINATES)
+#-----------------------------------------------------------------------
 """
-Minkowski product
-
     η( V1::RealVec , V2::RealVec )
 
 The function `η` takes two vectors ``V_1`` and ``V_2`` of equal length, and
@@ -14,25 +14,26 @@ that the first element of the vectors corresponds to the time component.
 
 """
 function η( V1::RealVec , V2::RealVec )
-    l1 = length(V1)
-    l2 = length(V2)
+    nv1 = length(V1)
+    nv2 = length(V2)
 
     met = -V1[1]*V2[1]
 
-    if l1==l2
-        for i=2:l1
+    if nv1==nv2
+        for i=2:nv1
             met += V1[i]*V2[i]
         end
         return met
     else
         print("Vectors are of a different dimension.")
+        return 0*V[1]
     end
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   THE MINKOWSKI NORM
+#-----------------------------------------------------------------------
 """
-Minkowski norm
-
     mnorm( V ) 
 
 The function `mnorm` computes the Minkowski norm, which is mathematically
@@ -57,9 +58,9 @@ function mnorm( V )
 end      #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   THE MINKOWSKI METRIC (RECTANGULAR COORDINATES)
+#-----------------------------------------------------------------------
 """
-Minkowski components
-
     ημν( tpfl::DataType , dim::Int )
 
 The function `ημν` constructs the components of the Minkowski metric. The
@@ -73,9 +74,9 @@ argument `dim` specifies the dimension. The default values are
 
 """
 function ημν( tpfl::DataType=Float64 , dim::Int=4 )   # Minkowski metric
-    gη = Matrix(one(tpfl)*(I(dim)))
+    gη = one(tpfl)*(I(dim))
 
     gη[1,1] = -gη[1,1]
 
-    return gη
+    return Matrix(gη)
 end     #---------------------------------------------------------------

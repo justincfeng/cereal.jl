@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------
+#   MULTIPLE EMISSION SET VECTOR GENERATOR
+#-----------------------------------------------------------------------
 """
-Multiple emission set vector generator
-
     multivec( X::RealMtx , k::Int )
 
 The function `` takes a ``m×n`` matrix `X`, and for `k```<n``,
@@ -31,9 +31,9 @@ function multivec( X::RealMtx , k::Int )
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   MULTIPLE EMISSION SET LOCATOR
+#-----------------------------------------------------------------------
 """
-Multiple emission set locator
-
     mlocator( X::RealMtx , locator::Function , Nbase::Int , dual::Bool, q::Real )
 
 The function `mlocator` computes a single intersection point ``X_{\\rm c}`` for

@@ -7,9 +7,9 @@
 #-----------------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   FRAME FUNCTION
+#-----------------------------------------------------------------------
 """
-# Frame function
-
     Frame( X::RealMtx )
 
 This function constructs a matrix of frame vectors `` e_i `` formed by the
@@ -31,9 +31,9 @@ function Frame( X::RealMtx ) # Constructs spatial frame
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   CONFIGURATION VECTOR CONSTRUCTOR
+#-----------------------------------------------------------------------
 """
-# Configuration vector constructor
-
     ConfVec( E::RealMtx )
 
 This function constructs the configuration vector `` χ ``, which is 
@@ -48,9 +48,9 @@ function ConfVec( E::RealMtx )
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   AUXILIARY VECTOR CONSTRUCTOR
+#-----------------------------------------------------------------------
 """
-# Auxiliary vector constructor
-
     AuxVec( χ::RealVec )
 
 This function constructs the vector `` ξ ``, which is arbitrary except
@@ -73,9 +73,9 @@ function AuxVec( χ::RealVec )
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   y* CONSTRUCTOR
+#-----------------------------------------------------------------------
 """
-# ystar constructor
-
     ystar( E::RealMtx , χ::RealVec , ξ::RealVec )
 
 This function computes the vector `` y_* ``:
@@ -123,9 +123,9 @@ function ystar( E::RealMtx , χ::RealVec , ξ::RealVec )
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   DELTA
+#-----------------------------------------------------------------------
 """
-# Delta
-
     Delta( χ::RealVec , ys::RealVec )
 
 This function takes two vectors and inputs, and computes the following
@@ -139,9 +139,9 @@ function Delta( χ::RealVec , ys::RealVec )
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   FOUR POINT LOCATOR FUNCTION (CFM10)
+#-----------------------------------------------------------------------
 """
-# Four point locator function (CFM10)
-
     locator4CFM10( X::RealMtx )
 
 The function presented here implements the four point relativistic

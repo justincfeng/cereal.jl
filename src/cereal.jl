@@ -17,9 +17,9 @@ include("alg/CFM10.jl")
 include("alg/FHC21.jl")
 
 #-----------------------------------------------------------------------
+#   LOCATOR SELECTION FUNCTION
+#-----------------------------------------------------------------------
 """
-Locator selection function.
-
     locatorselect( N::Int , Method::String )
 
 The function `locatorselect` selects the locator function to use. The first argument

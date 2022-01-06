@@ -8,9 +8,9 @@
 #-----------------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   LORENTZ TRANSFORMATION MATRIX CONSTRUCTOR
+#-----------------------------------------------------------------------
 """
-# Lorentz transformation matrix constructor
-
     LTM( NT::RealVec )
 
 This function takes a timelike normal vector `NT` and constructs a 
@@ -47,9 +47,9 @@ function LTM( NT::RealVec )             # Lorentz transformation matrix
 end  # End LTM
 
 #-----------------------------------------------------------------------
+#   ROTATION MATRIX CONSTRUCTOR
+#-----------------------------------------------------------------------
 """
-# Rotation matrix constructor
-
     MRz( v::RealVec )
 
 This function takes a vector `v` and constructs a rotation matrix so
@@ -96,9 +96,9 @@ function MRz( v::RealVec )                   # Rotate to z-adapted frame
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   SPACETIME ROTATION OPERATOR
+#-----------------------------------------------------------------------
 """
-# Spacetime rotation operator
-
     Lrot( X::RealMtx , Λ::RealMtx )
 
 This function applies the transformation transformation matrix `Λ` to
@@ -119,9 +119,9 @@ function Lrot( X::RealMtx , Λ::RealMtx )  # Spacetime rotation operator
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   FLIP SPACELIKE VECTORS ACROSS A NULL DIRECTION
+#-----------------------------------------------------------------------
 """
-# Flip spacelike vectors across a null direction
-
     NormflipS( Vsl::RealVec )
 
 This function takes a spacelike vector `Vsl` and "flips" it across a
@@ -162,9 +162,7 @@ function NormflipS( Vsl::RealVec )
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-#   Adapted frame intersection point finders
-#-----------------------------------------------------------------------
-
+#   INTERSECTION POINT FINDER (SPACELIKE CONFIGURATION HYPERPLANE)
 #-----------------------------------------------------------------------
 """
 # Intersection point finder (Spacelike configuration hyperplane)
@@ -211,9 +209,9 @@ function IPFinderS( Y::RealMtx )
 end  # End IPfinder
 
 #-----------------------------------------------------------------------
+#   INTERSECTION POINT FINDER (TIMELIKE CONFIGURATION HYPERPLANE)
+#-----------------------------------------------------------------------
 """
-# Intersection point finder (Timelike configuration hyperplane)
-
     IPFinderT( Y::RealMtx ) 
 
 Given a ``4×4`` matrix `Y` of emission points in an adapted frame 
@@ -337,9 +335,9 @@ end  # End IPfinder
 #-----------------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   FOUR POINT LOCATOR FUNCTION (FHC21)
+#-----------------------------------------------------------------------
 """
-# Four point locator function (FHC21)
-
     locator4FHC21( X::RealMtx )
 
 This function implements the four point relativistic location algorithm

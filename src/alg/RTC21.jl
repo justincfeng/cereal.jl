@@ -3,9 +3,9 @@
 #-----------------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   FIVE POINT LOCATOR FUNCTION (RTC21)
+#-----------------------------------------------------------------------
 """
-# Five point locator function (RTC21)
-
     locator5RTC21( X::RealMtx )
 
 The function presented here implements the five point relativistic 

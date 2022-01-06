@@ -7,9 +7,9 @@ using LinearAlgebra
 include("type.jl")
 
 #-----------------------------------------------------------------------
+#   VECTOR GENERATOR
+#-----------------------------------------------------------------------
 """
-Vector generator.
-
     vgenerator( tpfl::DataType=Float64 )
 
 The function `vgenerator` generates a random 3-vector of unit length.
@@ -36,9 +36,9 @@ function vgenerator( tpfl::DataType=Float64 )
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   NULL VECTOR GENERATOR
+#-----------------------------------------------------------------------
 """
-Null vector generator.
-
     nullgen( tpfl::DataType=Float64 ) 
 
 The function `nullgen` generates a random past directed null vector.
@@ -51,9 +51,9 @@ function nullgen( tpfl::DataType=Float64 )
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   INTERSECTION AND EMISSION POINT GENERATOR
+#-----------------------------------------------------------------------
 """
-Intersection and emission point generator.
-
     pgen( tpfl::DataType=Float64 , N::Int=4 )
 
 The function `pgen` generates a point `Xc` and `N` random emission
@@ -74,9 +74,9 @@ function pgen( tpfl::DataType=Float64 , N::Int=4 )
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   RESTRICTED INTERSECTION AND EMISSION POINT GENERATOR
+#-----------------------------------------------------------------------
 """
-Restricted intersection and emission point generator.
-
     xgen( xc::Real , r1::Real , r2::Real=r1 , N::Int=4 )
 
 The function `xgen` generates a point `Xc=[0;xc;0;0]` and `N` random
@@ -106,9 +106,9 @@ function xgen( xc::Real , r1::Real , r2::Real=r1 , N::Int=4 )
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   COMPARISON FUNCTION
+#-----------------------------------------------------------------------
 """
-Comparison function.
-
     comp( q::Real , P::RealVec , Xc::RealVec )
 
 The function `comp` compares the vectors `P` and `Xc` by taking the L1
@@ -132,13 +132,9 @@ function comp( q::Real , P::RealVec , Xc::RealVec )
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-#   Evaluation function
-#-----------------------------------------------------------------------
-
+#   EVALUATION FUNCTION
 #-----------------------------------------------------------------------
 """
-Evaluation function.
-
     main( locator::Function , N::Number , q::Real , k::Number ,     
           counter::Bool , usexgen::Bool )
 

@@ -3,9 +3,9 @@
 #-----------------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   LEVI-CIVITA SYMBOL AND TENSOR
+#-----------------------------------------------------------------------
 """
-Levi-Civita symbol and tensor
-
     ϵ( a , b , c , d )
 
 The function `ϵ` computes the Levi-Civita symbol and implements the
@@ -60,9 +60,9 @@ function ϵ( a , b , c , d )              # Levi-Civita symbol and tensor
 end     #---------------------------------------------------------------
 
 #-----------------------------------------------------------------------
+#   HODGE VECTOR FUNCTION
+#-----------------------------------------------------------------------
 """
-Hodge vector function
-
     HodgeV( U::RealVec , V::RealVec , W::RealVec )
 
 The function `HodgeV` computes `ϵ(0,U,V,W)`` and effectively raises the
