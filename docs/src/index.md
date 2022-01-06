@@ -18,9 +18,11 @@ acronym SRL for **S**pecial **R**elativistic **L**ocator.
 ### Setup
 
 The `cereal.jl` code was written for and tested in Julia 1.6; we
-recommend Julia 1.6 or newer. To add the code, open the Julia `REPL`, 
-then open the the package manager by typing `]`. In the package manager,
-run the following command:
+recommend Julia 1.6 or newer---please refer to the installation
+instructions [`here`](https://julialang.org/downloads/platform/). To add
+`cereal.jl` as a package in Julia, open the Julia `REPL`, then open the
+the package manager by typing `]`. In the package manager, run the
+following command:
 
     pkg> add https://github.com/justincfeng/cereal.jl/
 
