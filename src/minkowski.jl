@@ -8,9 +8,10 @@
 """
     η( V1::RealVec , V2::RealVec )
 
-The function `η` takes two vectors ``V_1`` and ``V_2`` of equal length, and
-computes their Minkowski product ``η(V_1,V_2)``, with the assumption
-that the first element of the vectors corresponds to the time component.
+The function `η` takes two vectors ``V_1`` and ``V_2`` of equal
+dimension, and computes their Minkowski product ``η(V_1,V_2)``, with the
+assumption that the first element of the vectors corresponds to the time
+component.
 
 """
 function η( V1::RealVec , V2::RealVec )
@@ -36,10 +37,10 @@ end     #---------------------------------------------------------------
 """
     mnorm( V ) 
 
-The function `mnorm` computes the Minkowski norm, which is mathematically
-equivalent to the absolute value of the square root of the Minkowski
-product ``√|η(V_1,V_2)|``. However, this function computes the result
-according to the formula used in the hypot function.
+The function `mnorm` computes the Minkowski norm, which is
+mathematically equivalent to the absolute value of the square root of
+the Minkowski product ``√|η(V_1,V_2)|``. However, this function computes
+the result according to the formula used in the hypot function.
 
 """
 function mnorm( V )
@@ -63,11 +64,11 @@ end      #---------------------------------------------------------------
 """
     ημν( tpfl::DataType , dim::Int )
 
-The function `ημν` constructs the components of the Minkowski metric. The
-first argument `tpfl` specifies the floating point datatype (typically
-Float64 or Double64 if one uses the DoubleFloats package) and the second
-argument `dim` specifies the dimension. The default values are 
-`tpfl=Float64` and `dim=4`:
+The function `ημν` constructs the components of the Minkowski metric.
+The first argument `tpfl` specifies the floating point datatype
+(typically Float64 or Double64 if one uses the DoubleFloats package) and
+the second argument `dim` specifies the dimension. The default values
+are `tpfl=Float64` and `dim=4`:
 
     julia> ημν() == ημν( Float64 , 4 )
         true
