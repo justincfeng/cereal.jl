@@ -40,10 +40,10 @@ B =
   \right] .
 ```
 
-The intersection point ``X_c`` is then given by:
+The intersection point ``X_{\rm c}`` is then given by:
 
 ```math 
-X_c = \mathcal{M}^{-1} B .
+X_{\rm c} = \mathcal{M}^{-1} B .
 ```
 
 This method is implemented in the following function:
@@ -60,7 +60,7 @@ which shows slight improvement over the `CFM10` method.
 The algorithm is conceptually simple for a spacelike hyperplane:
 
 1. Find and perform a Lorentz transformation such that the four points
-    ``X_i`` (labeled with ``i∈``{1,2,3,4}) have the same time coordinate
+    ``X_I`` (labeled with ``I∈``{1,2,3,4}) have the same time coordinate
     in the transformed frame. In the transformed frame, the four points
     form a tetrahedron in space at some instant in time.
 
@@ -72,10 +72,10 @@ The algorithm is conceptually simple for a spacelike hyperplane:
 3. Transform back to obtain the coordinates of the intersection point in
     the original frame.
 
-The computed point ``X_c`` should satisfy the four constraints
+The computed point ``X_{\rm c}`` should satisfy the four constraints
 
 ```math 
-dX_I^2:=η_{μν}(X_c^μ-X^μ_I)(X_c^ν-X^ν_I)=0,
+dX_I^2:=η_{μν}(X_c^μ-X^μ_I)(X_{\rm c}^ν-X^ν_I)=0,
 ``` 
 
 where ``μ``, ``ν`` are spacetime indices and ``η_{μν}`` is the Minkowski 
@@ -86,16 +86,16 @@ intricate:
 
 1. Find and perform a Lorentz transformation such that the four points
     ``X_I`` (labeled with ``I∈`` {1,2,3,4}) lie on a plane ``P_z``
-    specified by a ``z`` coordinate in the transformed frame. In the
+    specified by a constant ``z`` coordinate in the transformed frame. In the
     transformed frame, the four points lie on an elliptic hyperboloid.
 
-2. Find the vertex of the hyperboloid, and the Minkowski distance ``R``
-    from the vertex to a point on the hyperboloid. There are two
-    intersection points. The ``z`` coordinate for the intersection
+2. Find the vertex of the cone the hyperboloid asymptotes to, and the 
+    Minkowski distance ``R`` from the vertex to a point on the hyperboloid. 
+    There are two intersection points. The ``z`` coordinate for the intersection
     points is a distance ``R`` in the direction normal to the ``P_z``
     plane.
 
-3. Transform back to obtain the coordinates of the intersection point in
+3. Transform back to obtain the coordinates of the intersection points in
     the original frame.
 
 There are two intersection points in the case of a timelike hyperplane;
@@ -111,11 +111,11 @@ cereal.locator4FHC21
 
 ### The `CFM10` method
 
-The `CFM10` method is the original four point relativistic location
+The `CFM10` method is the original four-point relativistic location
 formula given by Coll, Ferrando, and Morales-Lladosa: 
 
 ```math 
-X_c^μ = X_4^μ + y_*^μ - \frac{η(y_*,y_*)}{η(y_*,χ)±\sqrt{|Δ|}} χ^μ, 
+X_{\rm c}^μ = X_4^μ + y_*^μ - \frac{η(y_*,y_*)}{η(y_*,χ)±\sqrt{|Δ|}} χ^μ, 
 ```
 
 where the following are defined:
@@ -150,7 +150,7 @@ choose to satisfy ``η(ξ,χ)=1``. See See Coll et al., Class.Quant.Grav.
 27 (2010) 065013 and Coll et al., Phys. Rev. D 86, 084036 (2012) for the
 details of the derivation.
 
-The method describe above is implemented in the following function:
+The method described above is implemented in the following function:
 
 ```@docs
 cereal.locator4CFM10
@@ -161,7 +161,7 @@ cereal.locator4CFM10
 
 Given a large number of emission points, one can reduce errors and avoid
 the bifurcation problem. A multi locator function is implemented here,
-which computes the intersection point ``X_c``. Given an ``m×n`` matrix
+which computes the intersection point ``X_{\rm c}``. Given an ``4×n`` matrix
 `X` of ``n`` emission points, and a function `locator` designed to work
 with `Nbase```<n`` emission points, this function is designed to
 minimize errors and solve the bifurcation problem when needed.

@@ -73,7 +73,7 @@ type `Float64`).
 
 ### Other methods
 
-The methods `CFM10`, `FHC21` are four point methods, the first argument
+The methods `CFM10`, `FHC21` are four-point methods, the first argument
 of `cereal.locatorselect` can have a value of at least `4`. 
 
 To try out the method `CFM10`, one may use the following command:
@@ -84,7 +84,7 @@ To try out the method `FHC21`, use:
 
     julia> locator4b = cereal.locatorselect(4,"FHC21")
 
-Since four point methods generally suffer from the bifurcation problem
+Since four-point methods generally suffer from the bifurcation problem
 (see Coll et al., Phys. Rev. D 86, 084036 (2012)), these locator
 functions return a tuple of points. It should be mentioned that if one
 feeds ``4×5`` matrix `X`, the functions `locator4a` and `locator4b` only
@@ -99,7 +99,7 @@ point `Xtar`.
 
 If one increases the number of emission points, then the resulting
 functions take additional emission points into consideration for the
-purpose of minimizing errors:
+purpose of minimizing errors and avoiding the bifurcation problem:
 
     julia> locator5a = cereal.locatorselect(5,"CFM10")
 
@@ -109,7 +109,7 @@ purpose of minimizing errors:
 
 Routines have been written to evaluate the methods more comprehensively.
 The function `cereal.ceval.main(locator,N,q,ne)` takes a locator
-function `locator` generates `N` sets of emission points `X` on the past
+function `locator` generates `N` sets of `ne` emission points `X` on the past
 light cone of target points `Xtar`, feeds each set into `locator`, and
 checks that `locator` yields results `Xc` that differ from `Xtar` by a
 factor less than a threshold value `q`. One may run the following:
@@ -122,7 +122,7 @@ factor less than a threshold value `q`. One may run the following:
 
     julia> cereal.ceval.main(cereal.locatorselect(6,"RTC21"),100000,5e-13,6)
 
-At most, one should encounter less than `10` failures in each case.
+One should encounter less than `10` failures in each case.
 
 ## References
 

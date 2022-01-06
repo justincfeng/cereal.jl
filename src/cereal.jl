@@ -23,10 +23,10 @@ Locator selection function.
     locatorselect( N::Int , Method::String )
 
 The function `locatorselect` selects the locator function to use. The first argument
-`N` determines the minimum number of emission points that the locator
+`N` determines the number of emission points that the locator
 function will use. `N=4` or `N≥5` is recommended. The second argument
 `Method` selects the formula or algorithm used to compute the
-intersection point ``X_c``. The available methods are `"FHC21"`,
+intersection point ``X_{\\rm c}``. The available methods are `"FHC21"`,
 `"CFM10"`, and for `N≥5`, `"RTC21"`.
 
 By default, the locator function assumes `N=5` and `Method="RTC21"`:

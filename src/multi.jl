@@ -36,7 +36,7 @@ Multiple emission set locator
 
     mlocator( X::RealMtx , locator::Function , Nbase::Int , dual::Bool, q::Real )
 
-The function `mlocator` computes a single intersection point ``X_c`` for
+The function `mlocator` computes a single intersection point ``X_{\\rm c}`` for
 a large number of emission points `X`, given a locator function
 `locator`.
 
