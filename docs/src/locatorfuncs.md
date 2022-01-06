@@ -173,8 +173,9 @@ their norms and identifies closely clustered points according to the
 differences between the neighbors of the sorted points, and the tolerance
 parameter `q`.
 
-In all cases, the errors are minimized by sorting points according to
-their Minkowski norms and selecting the point with the smallest norm.
+Since the difference vector ``dX_I:=X_{\rm c}-X_I`` must be lightlike, the errors 
+are minimized by sorting results according to the Minkowski norms of the difference 
+vectors and selecting the result with the smallest Minkowski norm.
 
 ```@docs
 cereal.mlocator
