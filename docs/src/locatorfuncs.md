@@ -67,7 +67,7 @@ The algorithm is conceptually simple for a spacelike hyperplane:
 2. Assuming the tetrahedron has finite volume, find the circumcenter and
     circumradius. The circumcenter provides the spatial coordinates of
     the intersection point in the new frame, and the circumradius
-    provides the time coordinate (via time of flight).
+    provides the time coordinate offset (via time of flight).
 
 3. Transform back to obtain the coordinates of the intersection point in
     the original frame.
@@ -92,8 +92,8 @@ intricate:
 2. Find the vertex of the cone the hyperboloid asymptotes to, and the 
     Minkowski distance ``R`` from the vertex to a point on the hyperboloid. 
     There are two intersection points. The ``z`` coordinate for the intersection
-    points is a distance ``R`` in the direction normal to the ``P_z``
-    plane.
+    points is offset by a distance ``R`` in the direction normal to the ``P_z``
+    plane in either way.
 
 3. Transform back to obtain the coordinates of the intersection points in
     the original frame.
