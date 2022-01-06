@@ -8,7 +8,10 @@ Central to relativistic positioning is the relativistic location
 location problem, which is the problem of finding the intersection of
 future pointing light cones from a collection of at least four emission
 points. `cereal.jl` contains a collection of functions for the
-relativistic location problem in flat spacetime. 
+relativistic location problem in flat spacetime.
+
+The name `cereal` is derived from an attempted pronounciation of the 
+acronym SRL for **S**pecial **R**elativistic **L**ocator.
 
 ## Short tutorial
 
