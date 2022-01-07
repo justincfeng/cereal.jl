@@ -132,5 +132,5 @@ doi:[10.1088/0264-9381/27/6/065013](https://doi.org/10.1088/0264-9381/27/6/06501
 `RTC21`: Ruggiero, M. L., Tartaglia, A., Casalino, L., *Geometric approach to the definition of emission coordinates*, (2021)  
 [\[arXiv:2111.13423\]](https://arxiv.org/abs/2111.13423)
 
-`FHC21`: Feng, J. C., Hejda, F., Carloni, S., *Relativistic location algorithm in curved spacetime*, (2021)  
-\[In preparation\]
+`FHC21`: Feng, J. C., Hejda, F., Carloni, S., *Relativistic location algorithm in curved spacetime*, (2022)
+[\[arXiv:2201.01774\]](https://arxiv.org/abs/2201.01774)
