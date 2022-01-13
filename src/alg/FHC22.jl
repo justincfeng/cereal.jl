@@ -335,16 +335,16 @@ end  # End IPfinder
 #-----------------------------------------------------------------------
 
 #-----------------------------------------------------------------------
-#   FOUR POINT LOCATOR FUNCTION (FHC21)
+#   FOUR POINT LOCATOR FUNCTION (FHC22)
 #-----------------------------------------------------------------------
 """
-    locator4FHC21( X::RealMtx )
+    locator4FHC22( X::RealMtx )
 
 This function implements the four point relativistic location algorithm
 of the authors. It outputs a pair of location points.
 
 """
-function locator4FHC21( X::RealMtx )
+function locator4FHC22( X::RealMtx )
     #   Computes location from a single set of four emission points
     tpfl = typeof(X[1,1])
     XF = tpfl.(X)

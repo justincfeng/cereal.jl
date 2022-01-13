@@ -14,7 +14,7 @@ include("ceval.jl")
 
 include("alg/RTC21.jl")
 include("alg/CFM10.jl")
-include("alg/FHC21.jl")
+include("alg/FHC22.jl")
 
 #-----------------------------------------------------------------------
 #   LOCATOR SELECTION FUNCTION
@@ -22,11 +22,11 @@ include("alg/FHC21.jl")
 """
     locatorselect( N::Int , Method::String )
 
-The function `locatorselect` selects the locator function to use. The first argument
-`N` determines the number of emission points that the locator
-function will use. `N=4` or `N≥5` is recommended. The second argument
-`Method` selects the formula or algorithm used to compute the
-intersection point ``X_{\\rm c}``. The available methods are `"FHC21"`,
+The function `locatorselect` selects the locator function to use. The
+first argument `N` determines the number of emission points that the
+locator function will use. `N=4` or `N≥5` is recommended. The second
+argument `Method` selects the formula or algorithm used to compute the
+intersection point ``X_{\\rm c}``. The available methods are `"FHC22"`,
 `"CFM10"`, and for `N≥5`, `"RTC21"`.
 
 By default, the locator function assumes `N=5` and `Method="RTC21"`:
@@ -45,8 +45,8 @@ function locatorselect( N::Int=5 , Method::String="RTC21" )
             return X -> zeros(Float64,4)
         elseif Method == "CFM10"
             return locator4CFM10
-        elseif Method == "FHC21"
-            return locator4FHC21
+        elseif Method == "FHC22"
+            return locator4FHC22
         else 
             print("Unrecognized method.")
             return X -> zeros(Float64,4)
@@ -58,8 +58,8 @@ function locatorselect( N::Int=5 , Method::String="RTC21" )
     elseif  N >= 5 && Method != "RTC21"
         if  Method == "CFM10"
             return (X,q=1e-14) -> mlocator(X,locator4CFM10,4,true,q)
-        elseif  Method == "FHC21"
-            return (X,q=1e-14) -> mlocator(X,locator4FHC21,4,true,q)
+        elseif  Method == "FHC22"
+            return (X,q=1e-14) -> mlocator(X,locator4FHC22,4,true,q)
         else
             print("Unrecognized method.")
             return (X,q=1e-14) -> zeros(Float64,4)
