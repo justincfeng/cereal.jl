@@ -21,7 +21,7 @@ XSc = [ 3.870494677479508  ; 0.9877690434886339 ;
 
 #-----------------------------------------------------------------------
 #
-#   FHC21 TESTS
+#   FHC22 TESTS
 #
 #-----------------------------------------------------------------------
 
@@ -106,7 +106,7 @@ end
 
 q   = 5e-13
 
-loc4a = cereal.locatorselect(4,"FHC21")
+loc4a = cereal.locatorselect(4,"FHC22")
 
 Xc4 = loc4a(X[:,1:4])
 Sda = cereal.ceval.comp(q,Xc4[1],Xtar)
@@ -120,7 +120,7 @@ Sdb = cereal.ceval.comp(q,Xc4[2],Xtar)
 
 @test Sda[1] == true || Sdb[1] == true
 
-loc5a = cereal.locatorselect(5,"FHC21")
+loc5a = cereal.locatorselect(5,"FHC22")
 
 Xc  = loc5a(X[:,1:5])
 Sd  = cereal.ceval.comp(q,Xc,Xtar)
