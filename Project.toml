@@ -1,7 +1,7 @@
 name = "cereal"
 uuid = "392217b4-8117-47a3-800b-1a39d67a1a83"
 authors = ["Justin C. Feng <justin.feng@tecnico.ulisboa.pt>"]
-version = "0.1.0"
+version = "1.0.0"
 
 [deps]
 LinearAlgebra   = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
