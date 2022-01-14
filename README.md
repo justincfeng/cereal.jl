@@ -1,4 +1,5 @@
 [![Build Status](https://github.com/justincfeng/cereal.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/justincfeng/cereal.jl/actions)
+[![DOI](https://zenodo.org/badge/338813194.svg)](https://zenodo.org/badge/latestdoi/338813194)
 
 # cereal.jl
 
