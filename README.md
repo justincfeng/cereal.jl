@@ -1,3 +1,5 @@
+[![Build Status](https://github.com/justincfeng/cereal.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/justincfeng/cereal.jl/actions)
+
 # cereal.jl
 
 This is a special relativistic location tool for use in relativistic positioning systems. It contains a collection of algorithms for computing the intersection points of future pointing light cones from at least four distinct spacelike separated emission points.
