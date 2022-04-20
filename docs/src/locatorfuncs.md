@@ -144,7 +144,7 @@ H := Ω_1 h(e_2,e_3) + Ω_2 h(e_3,e_1) + Ω_3 h(e_1,e_2)
 e_i^μ = X_i^μ - X_4^μ 
 ```
 
-where ``h(U,V)`` yields the rank-2 tensor ``-ϵ_{αβμν} U^μ U^ν`` (so that
+where ``h(U,V)`` yields the rank-2 tensor ``-ϵ_{αβμν} U^μ V^ν`` (so that
 ``H`` is a rank-2 quantity), and ``ξ^μ`` is an arbitrary vector which we
 choose to satisfy ``η(ξ,χ)=1``. See See Coll et al., Class.Quant.Grav.
 27 (2010) 065013 and Coll et al., Phys. Rev. D 86, 084036 (2012) for the
