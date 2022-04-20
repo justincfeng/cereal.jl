@@ -52,9 +52,9 @@ This method is implemented in the following function:
 cereal.locator5RTC21
 ```
 
-### The `FHC21` method
+### The `FHC22` method
 
-The `FHC21` method is a method developed by Feng, Hejda, and Carloni, 
+The `FHC22` method is a method developed by Feng, Hejda, and Carloni, 
 which shows slight improvement over the `CFM10` method.
 
 The algorithm is conceptually simple for a spacelike hyperplane:
@@ -106,7 +106,7 @@ cases permit the selection of a single emission point.
 The method described above is implemented in the following function:
 
 ```@docs
-cereal.locator4FHC21
+cereal.locator4FHC22
 ```
 
 ### The `CFM10` method
