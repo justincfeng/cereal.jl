@@ -165,7 +165,7 @@ function main( locator::Function , N::Number , q::Real , k::Number=5 ,
     for i=1:Int(N)
         if usexgen
             xc  = tpfl(2 + rand(tpfl))
-	        Xp  = xgen(xc,tpfl(1))
+	        Xp  = xgen(xc,tpfl(1),tpfl(1),k)
         else
             Xp  = pgen(tpfl,k)
         end
@@ -200,7 +200,7 @@ function main( locator::Function , N::Number , q::Real , k::Number=5 ,
         print("\rTest ended with zero failed cases out of "
                 ,Int(N)," \n")
     end
-end  # End full
+end  # End main
 
 #-----------------------------------------------------------------------
 end     # End scope of module ceval
