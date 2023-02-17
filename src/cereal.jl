@@ -5,6 +5,7 @@ module cereal      # cereal module
 using LinearAlgebra
 using Combinatorics
 using Statistics
+using ForwardDiff, DiffResults
 
 include("type.jl")
 include("minkowski.jl")
@@ -15,6 +16,8 @@ include("ceval.jl")
 include("alg/RTC21.jl")
 include("alg/CFM10.jl")
 include("alg/FHC22.jl")
+
+include("alg/FlatBroyden.jl")
 
 #-----------------------------------------------------------------------
 #   LOCATOR SELECTION FUNCTION
