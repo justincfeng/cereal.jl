@@ -353,11 +353,9 @@ function locator4FHC22( X::RealMtx )
         nv  = zeros(tpfl,4)
         Xc  = zeros(tpfl,4)
 
-        XA = zeros(tpfl,4,4)
-        XB = zeros(tpfl,4,4)
+        XT  = (zeros(tpfl,4,4), zeros(tpfl,4,4))
 
         Mz  = zeros(tpfl,4,4)
-        My  = zeros(tpfl,4,4)
         Λ   = zeros(tpfl,4,4)
 
         nv = HodgeV(X[:,1] - X[:,4],X[:,2] - X[:,4],X[:,3] - X[:,4])
