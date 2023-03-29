@@ -330,6 +330,44 @@ function IPFinderT( Y::RealMtx )
               , [ tc ; xc ; yc ; z - Δz ] )
 end  # End IPfinder
 
+function IPFinderTlin( Y::RealMtx )   
+    # Finds intersection of light cones in adapted frame
+    # Spacelike subconfiguration plane
+    tpfl=typeof(Y[1,1])
+
+    #   Defining variables
+    z  = ( Y[4,1] + Y[4,2] + Y[4,3] + Y[4,4] )/4
+    ( t1 , t2 , t3 ) = ( Y[1,1] , Y[1,2] , Y[1,3] )
+    ( x1 , x2 , x3 ) = ( Y[2,1] , Y[2,2] , Y[2,3] )
+    ( y1 , y2 , y3 ) = ( Y[3,1] , Y[3,2] , Y[3,3] )
+    ( t4 , x4 , y4 ) = ( Y[1,4] , Y[2,4] , Y[3,4] )
+
+    #   3x3 RTC-style matrix
+    C  = [  t1-t2   x2-x1   y2-y1   ;
+            t2-t3   x3-x2   y3-y2   ;
+            t3-t4   x4-x3   y4-y3   ]
+
+    B  = [  x2^2 - x1^2 + y2^2 - y1^2 + t1^2 - t2^2  ;
+            x3^2 - x2^2 + y3^2 - y2^2 + t2^2 - t3^2  ;
+            x4^2 - x3^2 + y4^2 - y3^2 + t3^2 - t4^2  ]
+
+    #   Solving for the vertex
+    Xc = inv(2 .* C) * B
+    (tc , xc , yc) = (Xc[1], Xc[2], Xc[3])
+
+    #   Hyperboloid distance calculation
+    R  = (  mnorm( [t1-tc;x1-xc;y1-yc] ) + 
+            mnorm( [t2-tc;x2-xc;y2-yc] ) +
+            mnorm( [t3-tc;x3-xc;y3-yc] ) +
+            mnorm( [t4-tc;x4-xc;y4-yc] ) ) / 4
+
+    #   z coordinate
+    Δz = R
+
+    return  (   [ tc ; xc ; yc ; z + Δz ] 
+              , [ tc ; xc ; yc ; z - Δz ] )
+end  # End IPfinder
+
 #-----------------------------------------------------------------------
 #   Locator functions
 #-----------------------------------------------------------------------
@@ -381,3 +419,53 @@ function locator4FHC22( X::RealMtx )
         return (Xc,Xc)
     end
 end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+#   FOUR POINT LOCATOR FUNCTION (FHC23 - development version)
+#-----------------------------------------------------------------------
+"""
+    locator4FHC23( X::RealMtx )
+
+This function implements the four point relativistic location algorithm
+of the authors with modified procedure for timelike configuration 
+plane. It outputs a pair of location points.
+
+"""
+function locator4FHC23( X::RealMtx )
+    #   Computes location from a single set of four emission points
+    tpfl = typeof(X[1,1])
+    XF = tpfl.(X)
+
+    #   Containers
+        nv  = zeros(tpfl,4)
+        Xc  = zeros(tpfl,4)
+
+        XT  = (zeros(tpfl,4,4), zeros(tpfl,4,4))
+
+        Mz  = zeros(tpfl,4,4)
+        Λ   = zeros(tpfl,4,4)
+
+        nv = HodgeV(X[:,1] - X[:,4],X[:,2] - X[:,4],X[:,3] - X[:,4])
+
+    if η(nv,nv) < 0         # Timelike normal vector n
+        #---------------------------------------------------------------
+        #   Computation for spacelike configuration plane
+        #---------------------------------------------------------------
+        Λ  = LTM(nv)
+        Xc = inv(Λ)*IPFinderS( Lrot(XF,Λ) )
+        return (Xc,Xc)
+    elseif η(nv,nv) > 0     # Spacelike normal vector n
+        #---------------------------------------------------------------
+        #   Computation for timelike configuration plane
+        #---------------------------------------------------------------
+        Λn  = LTM(NormflipS(nv))
+        Mz  = MRz(nv)
+        Λ   = Mz*Λn
+        XT  = IPFinderTlin( Lrot(XF,Λ) )
+        return (inv(Λ)*XT[1],inv(Λ)*XT[2])
+    elseif η(nv,nv) == 0     # Null normal vector n
+		print("nv norm zero.")
+        return (Xc,Xc)
+    end
+end     #---------------------------------------------------------------
+
