@@ -49,6 +49,8 @@ function locatorselect( N::Int=5 , Method::String="RTC21" )
             return locator4FHC22
         elseif Method == "FHC23"
             return locator4FHC23
+        elseif Method == "FHC24"
+            return locator4FHC24
         else 
             print("Unrecognized method.")
             return X -> zeros(Float64,4)
@@ -64,6 +66,8 @@ function locatorselect( N::Int=5 , Method::String="RTC21" )
             return (X,q=1e-14) -> mlocator(X,locator4FHC22,4,true,q)
         elseif  Method == "FHC23"
             return (X,q=1e-14) -> mlocator(X,locator4FHC23,4,true,q)
+        elseif  Method == "FHC24"
+            return (X,q=1e-14) -> mlocator(X,locator4FHC24,4,true,q)
         else
             print("Unrecognized method.")
             return (X,q=1e-14) -> zeros(Float64,4)
