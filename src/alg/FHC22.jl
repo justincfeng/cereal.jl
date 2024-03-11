@@ -208,6 +208,33 @@ function IPFinderS( Y::RealMtx )
     return [ tc ; xc[1] ; xc[2] ; xc[3] ]
 end  # End IPfinder
 
+function IPFinderSref( Y::RealMtx )   
+    # Finds intersection of light cones in adapted frame
+    tpfl=typeof(Y[1,1])
+
+    x = zeros(tpfl,3,4)     # Create containers
+    v = zeros(tpfl,3,3)
+
+    x[1,:] = Y[2,:]         # Spatial points for corners of tetrahedron
+    x[2,:] = Y[3,:]
+    x[3,:] = Y[4,:]
+
+    v[:,1] = x[:,2] - x[:,1]    # "Frame" vectors centered on x[:,1]
+    v[:,2] = x[:,3] - x[:,1]
+    v[:,3] = x[:,4] - x[:,1]
+    
+    B = [ (x[:,2] - x[:,1])⋅(x[:,2] + x[:,1]) ; (x[:,3] - x[:,1])⋅(x[:,3] + x[:,1]);
+          (x[:,4] - x[:,1])⋅(x[:,4] + x[:,1]) ] / 2    # Constructing B vector
+
+    A = transpose([ v[:,1]  v[:,2]  v[:,3] ])    # Constructing A matrix
+
+    xc = inv(A)*B           # Compute circumcenter
+    rc = (norm(xc-x[:,1]) + norm(xc-x[:,2]) + # Distance to circumcenter
+          norm(xc-x[:,3]) + norm(xc-x[:,4])) / 4
+    tc = rc + Y[1,1]        # Compute time coordinate
+    return [ tc ; xc[1] ; xc[2] ; xc[3] ]
+end  # End IPfinder
+
 #-----------------------------------------------------------------------
 #   INTERSECTION POINT FINDER (TIMELIKE CONFIGURATION HYPERPLANE)
 #-----------------------------------------------------------------------
@@ -368,6 +395,44 @@ function IPFinderTlin( Y::RealMtx )
               , [ tc ; xc ; yc ; z - Δz ] )
 end  # End IPfinder
 
+function IPFinderTlinref( Y::RealMtx )   
+    # Finds intersection of light cones in adapted frame
+    # Spacelike subconfiguration plane
+    tpfl=typeof(Y[1,1])
+
+    #   Defining variables
+    z  = ( Y[4,1] + Y[4,2] + Y[4,3] + Y[4,4] )/4
+    ( t1 , t2 , t3 ) = ( Y[1,1] , Y[1,2] , Y[1,3] )
+    ( x1 , x2 , x3 ) = ( Y[2,1] , Y[2,2] , Y[2,3] )
+    ( y1 , y2 , y3 ) = ( Y[3,1] , Y[3,2] , Y[3,3] )
+    ( t4 , x4 , y4 ) = ( Y[1,4] , Y[2,4] , Y[3,4] )
+
+    #   3x3 RTC-style matrix
+    C  = [  t1-t2   x2-x1   y2-y1   ;
+            t2-t3   x3-x2   y3-y2   ;
+            t3-t4   x4-x3   y4-y3   ]
+
+    B  = [ ( x2 - x1 )*( x2 + x1 ) + ( y2 - y1 )*( y2 + y1 ) + ( t1 - t2 )*( t1 + t2 ) ;
+           ( x3 - x2 )*( x3 + x2 ) + ( y3 - y2 )*( y3 + y2 ) + ( t2 - t3 )*( t2 + t3 ) ;
+           ( x4 - x3 )*( x4 + x3 ) + ( y4 - y3 )*( y4 + y3 ) + ( t3 - t4 )*( t3 + t4 ) ]
+
+    #   Solving for the vertex
+    Xc = inv(2 .* C) * B
+    (tc , xc , yc) = (Xc[1], Xc[2], Xc[3])
+
+    #   Hyperboloid distance calculation
+    R  = (  mnorm( [t1-tc;x1-xc;y1-yc] ) + 
+            mnorm( [t2-tc;x2-xc;y2-yc] ) +
+            mnorm( [t3-tc;x3-xc;y3-yc] ) +
+            mnorm( [t4-tc;x4-xc;y4-yc] ) ) / 4
+
+    #   z coordinate
+    Δz = R
+
+    return  (   [ tc ; xc ; yc ; z + Δz ] 
+              , [ tc ; xc ; yc ; z - Δz ] )
+end  # End IPfinder
+
 #-----------------------------------------------------------------------
 #   Locator functions
 #-----------------------------------------------------------------------
@@ -462,6 +527,55 @@ function locator4FHC23( X::RealMtx )
         Mz  = MRz(nv)
         Λ   = Mz*Λn
         XT  = IPFinderTlin( Lrot(XF,Λ) )
+        return (inv(Λ)*XT[1],inv(Λ)*XT[2])
+    elseif η(nv,nv) == 0     # Null normal vector n
+		print("nv norm zero.")
+        return (Xc,Xc)
+    end
+end     #---------------------------------------------------------------
+
+#-----------------------------------------------------------------------
+#   FOUR POINT LOCATOR FUNCTION (FHC24 - development version)
+#-----------------------------------------------------------------------
+"""
+    locator4FHC24( X::RealMtx )
+
+This function implements the four point relativistic location algorithm
+of the authors with modified procedure for timelike configuration 
+plane. It outputs a pair of location points.
+
+"""
+function locator4FHC24( X::RealMtx )
+    #   Computes location from a single set of four emission points
+    tpfl = typeof(X[1,1])
+    XF = tpfl.(X)
+
+    #   Containers
+        nv  = zeros(tpfl,4)
+        Xc  = zeros(tpfl,4)
+
+        XT  = (zeros(tpfl,4,4), zeros(tpfl,4,4))
+
+        Mz  = zeros(tpfl,4,4)
+        Λ   = zeros(tpfl,4,4)
+
+        nv = HodgeV(X[:,1] - X[:,4],X[:,2] - X[:,4],X[:,3] - X[:,4])
+
+    if η(nv,nv) < 0         # Timelike normal vector n
+        #---------------------------------------------------------------
+        #   Computation for spacelike configuration plane
+        #---------------------------------------------------------------
+        Λ  = LTM(nv)
+        Xc = inv(Λ)*IPFinderSref( Lrot(XF,Λ) )
+        return (Xc,Xc)
+    elseif η(nv,nv) > 0     # Spacelike normal vector n
+        #---------------------------------------------------------------
+        #   Computation for timelike configuration plane
+        #---------------------------------------------------------------
+        Λn  = LTM(NormflipS(nv))
+        Mz  = MRz(nv)
+        Λ   = Mz*Λn
+        XT  = IPFinderTlinref( Lrot(XF,Λ) )
         return (inv(Λ)*XT[1],inv(Λ)*XT[2])
     elseif η(nv,nv) == 0     # Null normal vector n
 		print("nv norm zero.")
