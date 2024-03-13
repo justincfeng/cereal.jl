@@ -456,7 +456,7 @@ function locator4FHC22( X::RealMtx )
         nv  = zeros(tpfl,4)
         Xc  = zeros(tpfl,4)
 
-        XT  = (zeros(tpfl,4,4), zeros(tpfl,4,4))
+        XT  = (zeros(tpfl,4), zeros(tpfl,4))
 
         Mz  = zeros(tpfl,4,4)
         Λ   = zeros(tpfl,4,4)
@@ -505,7 +505,7 @@ function locator4FHC23( X::RealMtx )
         nv  = zeros(tpfl,4)
         Xc  = zeros(tpfl,4)
 
-        XT  = (zeros(tpfl,4,4), zeros(tpfl,4,4))
+        XT  = (zeros(tpfl,4), zeros(tpfl,4))
 
         Mz  = zeros(tpfl,4,4)
         Λ   = zeros(tpfl,4,4)
@@ -554,7 +554,7 @@ function locator4FHC24( X::RealMtx )
         nv  = zeros(tpfl,4)
         Xc  = zeros(tpfl,4)
 
-        XT  = (zeros(tpfl,4,4), zeros(tpfl,4,4))
+        XT  = (zeros(tpfl,4), zeros(tpfl,4))
 
         Mz  = zeros(tpfl,4,4)
         Λ   = zeros(tpfl,4,4)
