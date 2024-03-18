@@ -92,9 +92,6 @@ and `` Ω_i := η(e_i,e_i) ``.
 function ystar( E::RealMtx , χ::RealVec , ξ::RealVec )
     tpfl=typeof(E[1,1])
 
-    χ = ConfVec( E )
-    ξ = AuxVec( χ )
-
     h23 = -ϵ( 0 , 0 , E[:,2] , E[:,3] )
     h31 = -ϵ( 0 , 0 , E[:,3] , E[:,1] )
     h12 = -ϵ( 0 , 0 , E[:,1] , E[:,2] )
